@@ -1,0 +1,17 @@
+{
+  "name": "hubot-alterdesk",
+  "version": "1.0.0",
+  "description": "Alterdesk adapter for hubot",
+  "main": "./src/alterdesk.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha test/*.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^4.0.0"
+  },
+  "devDependencies": {
+    "hubot": "^2.19.0"
+  }
+}
