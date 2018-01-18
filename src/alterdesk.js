@@ -18,7 +18,7 @@ class AlterdeskAdapter extends Adapter {
             reconnectTry: process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5,
             reconnectWait: process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000,
             protocol: process.env.HUBOT_ALTERDESK_PROTOCOL || 'wss',
-            pmAddPrefix: process.env.HUBOT_ALTERDESK_PM_PREFIX || true,
+            pmAddPrefix: process.env.HUBOT_ALTERDESK_PM_PREFIX || 1,
             typingDelay: process.env.HUBOT_ALTERDESK_TYPING_DELAY || 2500
         };
 
@@ -96,7 +96,7 @@ class AlterdeskAdapter extends Adapter {
 
         let message = data.body;
         if (
-            this.options.pmAddPrefix &&
+            this.options.pmAddPrefix === 1 &&
             message.slice(0, this.robot.name.length).toLowerCase() != this.robot.name.toLowerCase()
         ) {
             message = this.robot.name +" "+message;
