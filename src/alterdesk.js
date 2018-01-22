@@ -98,7 +98,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     readMessageConversation(data) {
-        this.robot.logger.info("Message", data);
+        this.robot.logger.debug("Message", data);
 
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id});
 
@@ -111,12 +111,12 @@ class AlterdeskAdapter extends Adapter {
         }
         this.robot.logger.info(`Received message: ${message} in room: ${user.room}, from ${user.name}`);
         var textMessage = new TextMessage(user, message, data.message_id);
-        console.log(textMessage);
         return this.receive(textMessage);
     }
 
     readPresence(data) {
-        this.robot.logger.info("Inc Presence", data);
+        this.robot.logger.debug("Presence", data);
+
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id});
         switch(data.status) {
             case 'busy':
