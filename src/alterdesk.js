@@ -14,7 +14,6 @@ class AlterdeskAdapter extends Adapter {
         let options = {
             token: process.env.HUBOT_ALTERDESK_TOKEN,
             host: process.env.HUBOT_ALTERDESK_HOST,
-            keepaliveInterval: process.env.HUBOT_ALTERDESK_KEEPALIVE_INTERVAL || 30000,
             reconnectTry: process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5,
             reconnectWait: process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000,
             protocol: process.env.HUBOT_ALTERDESK_PROTOCOL || 'wss',
@@ -49,13 +48,17 @@ class AlterdeskAdapter extends Adapter {
     }
 
     createClient() {
+        this.errorState = false;
         this.socket = new WebSocket(`${this.options.protocol}://${this.options.host}/v1/gateway`);
         this.socket.on('open', this.onConnected);
         this.socket.on('message', this.onData);
         let self = this;
         this.socket.on('close', () => {
-            self.robot.logger.info("Connection closed, attempting to reconnect");
-            self.reconnect();
+            self.robot.logger.info("Connection closed");
+            if (!self.errorState) {
+                self.robot.logger.info("attempting to reconnect");
+                self.reconnect();
+            }
         });
     }
 
@@ -86,11 +89,16 @@ class AlterdeskAdapter extends Adapter {
             case 'conversation_new_message':
                 this.readMessageConversation(message.data);
                 break;
+            case 'error':
+                if (message.code === 403) { //forbidden
+                    this.errorState = true;
+                }
+                break;
         }
     }
 
     readMessageConversation(data) {
-        this.robot.logger.info("Inc Message", data);
+        this.robot.logger.info("Message", data);
 
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id});
 
@@ -121,7 +129,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     send(envelope, ...messages) {
-        for (let msg in messages) {
+        for (let i in messages) {
             if (this.options.typingDelay > 0) {
                 this.socket.send(JSON.stringify({
                     event: 'typing',
@@ -135,7 +143,7 @@ class AlterdeskAdapter extends Adapter {
                 self.socket.send(JSON.stringify({
                     event: 'conversation_new_message',
                     data: {
-                        body: messages[msg],
+                        body: messages[i],
                         conversation_id: envelope.room
                     }
                 }));
