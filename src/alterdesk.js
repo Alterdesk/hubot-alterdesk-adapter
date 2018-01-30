@@ -60,6 +60,16 @@ class AlterdeskAdapter extends Adapter {
                 self.reconnect();
             }
         });
+        this.socket.on('unexpected-response', (req, res) => {
+            self.robot.logger.info(`Unexpected response: ${res.statusCode}`);
+            if (!self.errorState) {
+                self.robot.logger.info("attempting to reconnect");
+                self.reconnect();
+            }
+        });
+        this.socket.on('error', (error) => {
+            self.robot.logger.info(`Error: ${error}`);
+        });
     }
 
     onConnected() {
