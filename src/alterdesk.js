@@ -121,6 +121,7 @@ class AlterdeskAdapter extends Adapter {
         }
         this.robot.logger.info(`Received message: ${message} in room: ${user.room}, from ${user.name}`);
         var textMessage = new TextMessage(user, message, data.message_id);
+        textMessage.attachments = data.attachments;
         return this.receive(textMessage);
     }
 
