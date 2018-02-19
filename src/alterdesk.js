@@ -86,6 +86,7 @@ class AlterdeskAdapter extends Adapter {
         message = JSON.parse(message);
         switch(message.event) {
             case 'authenticated':
+                this.robot.user = message.data.user;
                 this.robot.logger.info(`Authenticated on Gateway as ${message.data.user.first_name} ${message.data.user.last_name} of ${message.data.user.company_name}`);
                 this.emit((this.connected?'reconnected':'connected'));
                 this.connected = true;
@@ -111,6 +112,11 @@ class AlterdeskAdapter extends Adapter {
         this.robot.logger.debug("Message", data);
 
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id});
+
+        if(user.id == this.robot.user.id) {
+            this.robot.logger.debug("Ignoring message from self");
+            return;
+        }
 
         let message = data.body;
         if (
