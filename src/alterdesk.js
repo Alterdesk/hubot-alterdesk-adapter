@@ -171,9 +171,10 @@ class AlterdeskAdapter extends Adapter {
             if (this.options.autoJoin === 1) {
                 this.joinGroupchat(data.groupchat_id);
                 this.addGroupchatToCache(data.groupchat_id);
-
+                this.robot.logger.debug("Retrieving message " + data.message_id + " in group " + data.groupchat_id);
                 this.robot.http(`${this.options.ssl === 1 ? 'https' : 'http'}://${this.options.host}/v1/groupchats/${data.groupchat_id}/messages/${data.message_id}`).header('Authorization', `Bearer ${this.options.token}`).get()((err, resp, body) => {
-                    if (resp.statusCode === 200) {
+                    if (resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
+                        this.robot.logger.debug("Message: " + resp.statusCode + ": " + body);
                         var msgObject = JSON.parse(body);
                         message = msgObject.body;
                         if (
@@ -186,6 +187,8 @@ class AlterdeskAdapter extends Adapter {
                         textMsg.attachments = data.attachments;
                         textMsg.mentions = data.mentions;
                         self.receive(textMsg);
+                    } else {
+                        this.robot.logger.error("Message: " + resp.statusCode + ": " + body);
                     }
                 });
             }
