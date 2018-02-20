@@ -124,6 +124,7 @@ class AlterdeskAdapter extends Adapter {
                 }
                 break;
             case 'error':
+                this.robot.logger.error("Gateway Error", message);
                 if (message.code === 403) { //forbidden
                     this.errorState = true;
                 }
