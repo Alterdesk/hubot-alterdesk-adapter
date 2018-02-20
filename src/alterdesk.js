@@ -2,6 +2,7 @@ const {Adapter, Robot, User, TextMessage, EnterMessage, LeaveMessage} = require(
 const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 class AlterdeskAdapter extends Adapter {
 
@@ -86,7 +87,13 @@ class AlterdeskAdapter extends Adapter {
         this.socket.send(JSON.stringify({
             event: 'handshake',
             data: {
-                token: this.options.token
+                token: this.options.token,
+                properties: {
+                    os: os.platform(),
+                    browser: "Hubot",
+                    device: "Hubot Alterdesk Adapter",
+                    version: this.robot.version
+                }
             }
         }));
     }
