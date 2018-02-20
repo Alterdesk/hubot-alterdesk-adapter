@@ -119,8 +119,8 @@ class AlterdeskAdapter extends Adapter {
             case 'new_groupchat':
                 //add groupchat id to cache? if auto join is active
                 if (this.options.autoJoin === 1) {
-                    this.joinGroupchat(data.groupchat_id);
-                    this.addGroupchatToCache(data.groupchat_id);
+                    this.joinGroupchat(message.data.groupchat_id);
+                    this.addGroupchatToCache(message.data.groupchat_id);
                 }
                 break;
             case 'error':
