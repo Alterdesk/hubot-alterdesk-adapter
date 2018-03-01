@@ -15,7 +15,7 @@ class AlterdeskAdapter extends Adapter {
     run() {
         let options = {
             token: process.env.HUBOT_ALTERDESK_TOKEN,
-            host: process.env.HUBOT_ALTERDESK_HOST,
+            host: process.env.HUBOT_ALTERDESK_HOST || "api.alterdesk.com:443",
             reconnectTry: process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5,
             reconnectWait: process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000,
             ssl: process.env.HUBOT_ALTERDESK_SSL || 1,
