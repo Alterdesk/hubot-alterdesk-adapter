@@ -58,16 +58,26 @@ When Hubot is authenticated on Alterdesk, the chats will be joined that are set 
 When auto join is disabled, the cache file can be used to limit Hubot to certain group chats.
 
 ### One to one chat
-
+Sending and receiving messages in a chat with a single user behave like normal Hubot chats.
 
 ### Group chat
-
+When a message is received in a group, the user.id contains both the user id and the group id to separate the chats artificially.
+To retrieve the user id from a group chat message, the user id is set in the parameter user.user_id.
 
 ### Presence
+If a user changes its presence, an EnterMessage or LeaveMessage is passed to Hubot.
 
+EnterMessage:
+* Online
+* Away
+* Busy
+
+LeaveMessage:
+* Offline
 
 ### Attachments
-
+Attachments that are received are added to a TextMessage in the parameter attachments.
 
 ### User mentions
+If a user tags a chat member, the mention is added to a TextMessage in the parameter mentions.
 The "@All members" mention is not included
