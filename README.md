@@ -1,7 +1,8 @@
 # Hubot Alterdesk Adapter
 
-Adapter to connect a Hubot instance to the Alterdesk Gateway API
+Adapter to connect a [Hubot](https://hubot.github.com/) instance to the [Alterdesk Gateway API](https://api.alterdesk.com/documentation/gateway)
 
+## Usage
 To use the adapter, set at least the API token for Alterdesk as an environment variable in your hubot startup script.
 ```sh
 #!/bin/sh
@@ -15,3 +16,58 @@ export HUBOT_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 exec node_modules/.bin/hubot --name "hubot" --adapter "alterdesk" "$@"
 
 ```
+
+
+## Environment variables
+
+### Connection settings
+HUBOT_ALTERDESK_TOKEN
+* Token for the Alterdesk API
+
+HUBOT_ALTERDESK_HOST
+* Host and port of the Alterdesk API *(default: api.alterdesk.com:443)*
+
+HUBOT_ALTERDESK_RECONNECT_TRY
+* Amount of retries to reconnect to Alterdesk *(default: 5)*
+
+HUBOT_ALTERDESK_RECONNECT_WAIT
+* Milliseconds to wait for a reconnect attempt *(default: 5000)*
+
+HUBOT_ALTERDESK_SSL || 1,
+* Use SSL to connect to Alterdesk. *(0 = off, 1 = on, default: 1)*
+
+### Message settings
+HUBOT_ALTERDESK_PM_PREFIX
+* Message from Alterdesk always have the robot name as a prefix(to trigger Hubot). *(0 = off, 1 = on, default: 1)*
+
+HUBOT_ALTERDESK_TYPING_DELAY
+* Milliseconds to show Hubot as "Typing..." before sending message to Alterdesk *(default: 2500)*
+
+### Group chat settings
+HUBOT_ALTERDESK_AUTOJOIN
+* Should automatically join group chats. *(0 = off, 1 = on, default: 1)*
+
+HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE
+* Group chat join cache file location *(default: groupchat_cache.json)*
+
+
+## Behaviour
+
+### Authentication
+When Hubot is authenticated on Alterdesk, the chats will be joined that are set in the cache file.
+When auto join is disabled, the cache file can be used to limit Hubot to certain group chats.
+
+### One to one chat
+
+
+### Group chat
+
+
+### Presence
+
+
+### Attachments
+
+
+### User mentions
+The "@All members" mention is not included
