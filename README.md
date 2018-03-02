@@ -116,7 +116,7 @@ if(message instanceof TextMessage) {
         for(var i in attachments) {
             var attachment = attachments[i];
             var attachmentId = attachment["id"]; // Attachment id
-            var filename = attachment["name'];   // File name
+            var filename = attachment["name"];   // File name
             var mime = attachment["mime"];       // MIME type
             var size = attachment["size"];       // Size in bytes
         }
