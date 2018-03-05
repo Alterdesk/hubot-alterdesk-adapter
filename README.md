@@ -105,9 +105,9 @@ if(message instanceof TextMessage) {
     }
     
     if(userInGroup) {
-        console.log("Received group message from user " + userId + " in chat " + message.room");
+        console.log("Received group message from user " + userId + " in chat " + message.room);
     } else {
-        console.log("Received 1-to-1 message from user " + userId + " in chat " + message.room");
+        console.log("Received 1-to-1 message from user " + userId + " in chat " + message.room);
     }
     
     // Check and parse attachments
