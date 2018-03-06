@@ -6,6 +6,10 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alterdesk/hubot-alterdesk-adapter"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
