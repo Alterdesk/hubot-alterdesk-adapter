@@ -3,8 +3,11 @@
 Adapter to connect a [Hubot](https://hubot.github.com/) instance to the 
 [Alterdesk Gateway API](https://api.alterdesk.com/documentation/gateway)
 
+Dependencies
+* [ws](https://github.com/websockets/ws)
+
 ## Usage
-To use the adapter, set at least the API token for Alterdesk as an environment variable in your hubot startup script.
+To use the adapter, set at least the OAuth 2.0 token for Alterdesk API as an environment variable in your hubot startup script.
 Usually located at *hubot/bin/hubot*
 ```sh
 #!/bin/sh
@@ -25,7 +28,7 @@ Using enviroment variables various settings can be changed, only the API token v
 
 ### Connection settings
 HUBOT_ALTERDESK_TOKEN
-* Token for the Alterdesk API
+* OAuth 2.0 token for the Alterdesk API
 
 HUBOT_ALTERDESK_HOST
 * Host and port of the Alterdesk API *(default: api.alterdesk.com:443)*
