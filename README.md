@@ -7,8 +7,9 @@ Dependencies
 * [ws](https://github.com/websockets/ws)
 
 ## Usage
-To use the adapter, set at least the OAuth 2.0 token for Alterdesk API as an environment variable in your hubot startup script.
-Usually located at *hubot/bin/hubot*
+To use the adapter, set at least the OAuth 2.0 token for Alterdesk API as an environment variable in your Hubot startup script.
+
+Bash script, usually located at *hubot/bin/hubot*
 ```sh
 #!/bin/sh
 
@@ -22,6 +23,17 @@ exec node_modules/.bin/hubot --name "hubot" --adapter "alterdesk" "$@"
 
 ```
 
+Batch script, usually located at *hubot/bin/hubot.cmd*
+```batch
+@echo off
+
+SETLOCAL
+SET PATH=node_modules\.bin;node_modules\hubot\node_modules\.bin;%PATH%
+
+SET HUBOT_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
+
+node_modules\.bin\hubot.cmd --name "alterdeskbot" --adapter "alterdesk" %*
+```
 
 ## Environment variables
 Using enviroment variables various settings can be changed, only the API token variable that is mandatory.
