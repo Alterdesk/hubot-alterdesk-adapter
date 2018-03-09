@@ -13,9 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ws": "^4.0.0"
-  },
-  "devDependencies": {
+    "ws": "^4.0.0",
     "hubot": "^2.19.0"
   }
 }
