@@ -10,6 +10,8 @@ class AlterdeskAdapter extends Adapter {
         super(...args);
         this.onConnected = this.onConnected.bind(this);
         this.onData = this.onData.bind(this);
+        this.send = this.send.bind(this);
+        this.reply = this.reply.bind(this);
     }
 
     run() {
@@ -99,6 +101,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     onData(message) {
+        this.robot.logger.debug("onData", message);
         message = JSON.parse(message);
         switch(message.event) {
             case 'authenticated':
@@ -140,7 +143,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     readMessageConversation(data) {
-        this.robot.logger.debug("Conversation Message", data);
+        this.robot.logger.debug("readMessageConversation", data);
 
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id, is_groupchat: false});
 
@@ -164,7 +167,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     readMessageGroupchat(data) {
-        this.robot.logger.debug("Groupchat Message", data);
+        this.robot.logger.debug("readMessageGroupchat", data);
 
         let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
 
@@ -217,7 +220,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     readPresence(data) {
-        this.robot.logger.debug("Presence", data);
+        this.robot.logger.debug("readPresence", data);
 
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id});
         switch(data.status) {
@@ -241,6 +244,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     sendGroupchat(envelope, message) {
+        this.robot.logger.debug("sendGroupchat", envelope, message);
         if (this.options.typingDelay > 0) {
             this.socket.send(JSON.stringify({
                 event: 'typing',
@@ -262,6 +266,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     sendConversation(envelope, message) {
+        this.robot.logger.debug("sendConversation", envelope, message);
         if (this.options.typingDelay > 0) {
             this.socket.send(JSON.stringify({
                 event: 'typing',
