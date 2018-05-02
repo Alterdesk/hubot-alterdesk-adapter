@@ -105,15 +105,7 @@ class AlterdeskAdapter extends Adapter {
         message = JSON.parse(message);
         switch(message.event) {
             case 'authenticated':
-                this.robot.user = message.data.user;
-                this.robot.logger.info(`Authenticated on Gateway as ${message.data.user.first_name} ${message.data.user.last_name} of ${message.data.user.company_name}`);
-                this.emit((this.connected?'reconnected':'connected'));
-                this.connected = true;
-                this.reconnectTryCount = 0;
-
-                for (var i in this.groupchat_cache) {
-                    this.joinGroupchat(this.groupchat_cache[i]);
-                }
+                this.readAuthenticated(message.data);
                 break;
             case 'typing':
             case 'stop_typing':
@@ -242,6 +234,24 @@ class AlterdeskAdapter extends Adapter {
         textMessage.attachments = data.attachments;
         textMessage.mentions = data.mentions;
         return this.receive(textMessage);
+    }
+
+    readAuthenticated(data) {
+        this.robot.user = data.user;
+        this.robot.logger.info(`Authenticated on Gateway as ${data.user.first_name} ${data.user.last_name} from ${data.user.company_name}`);
+        this.emit((this.connected?'reconnected':'connected'));
+        this.connected = true;
+        this.reconnectTryCount = 0;
+
+        let self = this;
+        setTimeout(function() {
+            var user = new User("dummyId");
+            self.receive(new TopicMessage(user, "authenticated", data.user));
+
+            for (var i in self.groupchat_cache) {
+                self.joinGroupchat(self.groupchat_cache[i]);
+            }
+        }, 10);
     }
 
     readPresence(data) {
