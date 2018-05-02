@@ -89,7 +89,7 @@ the adapter. This enables users to chat in a one-to-one chat and a group chat at
 up. To retrieve the user id from a group chat message, the user id is set in the parameter user.user_id.
 
 ### Presence
-If a user changes its presence, an EnterMessage or LeaveMessage is passed to Hubot.
+If a user changes its presence, a TopicMessage with the status and an EnterMessage or LeaveMessage is passed to Hubot.
 
 EnterMessage:
 * Online
@@ -105,6 +105,53 @@ Attachments that are received are added to a TextMessage in the parameter attach
 ### User mentions
 If a user tags a chat member, the mention is added to a TextMessage in the parameter mentions.
 The "@All members" mention is not included
+
+### Events
+When an messenger event is received, it is sent to the Hubot instance by a TopicMessage.
+
+#### Authenticated
+Event *authenticated*
+
+* *user*: Dummy Hubot user data
+* *text*: "authenticated"
+* *id*: Alterdesk user data
+
+#### User composing events
+Events *typing* and *stop_typing*
+
+* *user*: Hubot user data
+* *text*: "<EVENT_NAME>"
+* *id*: "<CHAT_ID>"
+
+#### User presence events
+Event *presence_update*
+
+* *user*: Hubot user data
+* *text*: "presence_update"
+* *id*: "<STATUS_NAME>"
+
+#### Chat events
+Events *new_conversation*, *new_groupchat*, *groupchat_removed*, *groupchat_closed*, *groupchat_subscribed* and 
+*groupchat_unsubscribed*
+
+* *user*: Dummy Hubot user data
+* *text*: "<EVENT_NAME>"
+* *id*: "<CHAT_ID>"
+
+#### Message events
+Events *conversation_message_liked*, *conversation_message_deleted*, *groupchat_message_liked* and 
+*groupchat_message_deleted*
+
+* *user*: Hubot user data
+* *text*: "<EVENT_NAME>"
+* *id*: "<MESSAGE_ID>"
+
+#### Groupchat member events
+Events *groupchat_members_added* and *groupchat_members_removed*
+
+* *user*: Hubot user data
+* *text*: "<EVENT_NAME>"
+* *id*: Alterdesk member added/removed data
 
 ## Example code
 Handling messages in the receiver function of the Hubot instance
