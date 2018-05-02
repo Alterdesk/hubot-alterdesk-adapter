@@ -122,8 +122,8 @@ Event *authenticated*
 Events *typing* and *stop_typing*
 
 * *user*: Hubot user data
-* *text*: "<EVENT_NAME>"
-* *id*: "<CHAT_ID>"
+* *text*: "EVENT_NAME"
+* *id*: "CHAT_ID"
 
 **User presence events**
 
@@ -131,7 +131,7 @@ Event *presence_update*
 
 * *user*: Hubot user data
 * *text*: "presence_update"
-* *id*: "<STATUS_NAME>"
+* *id*: "STATUS"
 
 **Chat events**
 
@@ -139,8 +139,8 @@ Events *new_conversation*, *new_groupchat*, *groupchat_removed*, *groupchat_clos
 *groupchat_unsubscribed*
 
 * *user*: Dummy Hubot user data
-* *text*: "<EVENT_NAME>"
-* *id*: "<CHAT_ID>"
+* *text*: "EVENT_NAME"
+* *id*: "CHAT_ID"
 
 **Message events**
 
@@ -148,15 +148,15 @@ Events *conversation_message_liked*, *conversation_message_deleted*, *groupchat_
 *groupchat_message_deleted*
 
 * *user*: Hubot user data
-* *text*: "<EVENT_NAME>"
-* *id*: "<MESSAGE_ID>"
+* *text*: "EVENT_NAME"
+* *id*: "MESSAGE_ID"
 
 **Groupchat member events**
 
 Events *groupchat_members_added* and *groupchat_members_removed*
 
 * *user*: Hubot user data
-* *text*: "<EVENT_NAME>"
+* *text*: "EVENT_NAME"
 * *id*: Alterdesk member added/removed data
 
 ## Example code
