@@ -109,28 +109,32 @@ The "@All members" mention is not included
 ### Events
 When an messenger event is received, it is sent to the Hubot instance by a TopicMessage.
 
-#### Authenticated
+**Authenticated**
+
 Event *authenticated*
 
 * *user*: Dummy Hubot user data
 * *text*: "authenticated"
 * *id*: Alterdesk user data
 
-#### User composing events
+**User composing events**
+
 Events *typing* and *stop_typing*
 
 * *user*: Hubot user data
 * *text*: "<EVENT_NAME>"
 * *id*: "<CHAT_ID>"
 
-#### User presence events
+**User presence events**
+
 Event *presence_update*
 
 * *user*: Hubot user data
 * *text*: "presence_update"
 * *id*: "<STATUS_NAME>"
 
-#### Chat events
+**Chat events**
+
 Events *new_conversation*, *new_groupchat*, *groupchat_removed*, *groupchat_closed*, *groupchat_subscribed* and 
 *groupchat_unsubscribed*
 
@@ -138,7 +142,8 @@ Events *new_conversation*, *new_groupchat*, *groupchat_removed*, *groupchat_clos
 * *text*: "<EVENT_NAME>"
 * *id*: "<CHAT_ID>"
 
-#### Message events
+**Message events**
+
 Events *conversation_message_liked*, *conversation_message_deleted*, *groupchat_message_liked* and 
 *groupchat_message_deleted*
 
@@ -146,7 +151,8 @@ Events *conversation_message_liked*, *conversation_message_deleted*, *groupchat_
 * *text*: "<EVENT_NAME>"
 * *id*: "<MESSAGE_ID>"
 
-#### Groupchat member events
+**Groupchat member events**
+
 Events *groupchat_members_added* and *groupchat_members_removed*
 
 * *user*: Hubot user data
