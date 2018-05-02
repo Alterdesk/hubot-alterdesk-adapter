@@ -150,8 +150,6 @@ class AlterdeskAdapter extends Adapter {
             case 'groupchat_members_removed':
                 this.readGroupchatMemberEvent(message.data, message.event);
                 break;
-            case 'groupchat_closed':
-                this.removeGroupchatFromCache(message.data.groupchat_id);
             case 'error':
                 this.robot.logger.error("Gateway Error", message);
                 if(message.data.code === 304) {
