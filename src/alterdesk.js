@@ -1,4 +1,4 @@
-const {Adapter, Robot, User, TextMessage, EnterMessage, LeaveMessage} = require('hubot');
+const {Adapter, Robot, User, TextMessage, EnterMessage, LeaveMessage, TopicMessage} = require('hubot');
 const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
@@ -115,23 +115,40 @@ class AlterdeskAdapter extends Adapter {
                     this.joinGroupchat(this.groupchat_cache[i]);
                 }
                 break;
+            case 'typing':
+            case 'stop_typing':
+                this.readTyping(message.data, message.event);
+                break;
             case 'presence_update':
                 this.readPresence(message.data);
                 break;
             case 'new_conversation':
+                this.readConversationEvent(message.data, message.event);
                 break;
             case 'conversation_new_message':
                 this.readMessageConversation(message.data);
+                break;
+            case 'conversation_message_liked':
+            case 'conversation_message_deleted':
+                this.readConversationMessageEvent(message.data, message.event);
                 break;
             case 'groupchat_new_message':
                 this.readMessageGroupchat(message.data);
                 break;
             case 'new_groupchat':
-                //add groupchat id to cache? if auto join is active
-                if (this.options.autoJoin === 1) {
-                    this.joinGroupchat(message.data.groupchat_id);
-                    this.addGroupchatToCache(message.data.groupchat_id);
-                }
+            case 'groupchat_removed':
+            case 'groupchat_closed':
+            case 'groupchat_subscribed':
+            case 'groupchat_unsubscribed':
+                this.readGroupchatEvent(message.data, message.event);
+                break;
+            case 'groupchat_message_liked':
+            case 'groupchat_message_deleted':
+                this.readGroupchatMessageEvent(message.data, message.event);
+                break;
+            case 'groupchat_members_added':
+            case 'groupchat_members_removed':
+                this.readGroupchatMemberEvent(message.data, message.event);
                 break;
             case 'error':
                 this.robot.logger.error("Gateway Error", message);
@@ -223,6 +240,7 @@ class AlterdeskAdapter extends Adapter {
         this.robot.logger.debug("readPresence", data);
 
         let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id});
+        this.receive(new TopicMessage(user, "presence_update", data.status));
         switch(data.status) {
             case 'busy':
             case 'away':
@@ -231,6 +249,49 @@ class AlterdeskAdapter extends Adapter {
             case 'offline':
                 return this.receive(new LeaveMessage(user));
         }
+    }
+
+    readTyping(data, event) {
+        if(data.conversation_id) {
+            let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id, is_groupchat: false});
+            this.receive(new TopicMessage(user, event, data.conversation_id));
+        } else if(data.groupchat_id) {
+            let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
+            this.receive(new TopicMessage(user, event, data.groupchat_id));
+        }
+    }
+
+    readConversationEvent(data, event) {
+        var user = new User("dummyId");
+        this.receive(new TopicMessage(user, event, data.conversation_id));
+    }
+
+    readConversationMessageEvent(data, event) {
+        let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id, is_groupchat: false});
+        this.receive(new TopicMessage(user, event, data.message_id));
+    }
+
+    readGroupchatEvent(data, event) {
+        if(event === "new_groupchat") {
+            if (this.options.autoJoin === 1) {
+                this.joinGroupchat(data.groupchat_id);
+                this.addGroupchatToCache(data.groupchat_id);
+            }
+        } else if(event === "groupchat_removed" || event === "groupchat_closed") {
+            this.removeGroupchatFromCache(data.groupchat_id);
+        }
+        var user = new User("dummyId");
+        this.receive(new TopicMessage(user, event, data.groupchat_id));
+    }
+
+    readGroupchatMessageEvent(data, event) {
+        let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
+        this.receive(new TopicMessage(user, event, data.message_id));
+    }
+
+    readGroupchatMemberEvent(data, event) {
+        let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
+        this.receive(new TopicMessage(user, event, data));
     }
 
     send(envelope, ...messages) {
