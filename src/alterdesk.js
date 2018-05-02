@@ -61,7 +61,7 @@ class AlterdeskAdapter extends Adapter {
 
     createClient() {
         this.errorState = false;
-        this.socket = new WebSocket(`${this.options.ssl===1?'wss':'ws'}://${this.options.host}/v1/gateway`);
+        this.socket = new WebSocket(`${this.options.ssl === 1 ? 'wss' : 'ws'}://${this.options.host}/v1/gateway`);
         this.socket.on('open', this.onConnected);
         this.socket.on('message', this.onData);
         let self = this;
@@ -150,10 +150,20 @@ class AlterdeskAdapter extends Adapter {
             case 'groupchat_members_removed':
                 this.readGroupchatMemberEvent(message.data, message.event);
                 break;
+            case 'groupchat_closed':
+                this.removeGroupchatFromCache(message.data.groupchat_id);
             case 'error':
                 this.robot.logger.error("Gateway Error", message);
-                if (message.code === 403) { //forbidden
+                if(message.data.code === 304) {
+                    if(message.data.error === 'groupchat_is_closed') {
+                        this.removeGroupchatFromCache(message.data.groupchat_id);
+                    }
+                } else if (message.data.code === 403) { //forbidden
                     this.errorState = true;
+                } else if(message.data.code === 404) {
+                    if(message.data.error === 'groupchat_not_found') {
+                        this.removeGroupchatFromCache(message.data.groupchat_id);
+                    }
                 }
                 break;
         }
@@ -351,7 +361,7 @@ class AlterdeskAdapter extends Adapter {
     joinGroupchat(groupchat_id) {
         this.robot.logger.info(`Joining groupchat with id '${groupchat_id}'`);
         this.socket.send(JSON.stringify({
-            event: 'groupchat_open',
+            event: 'groupchat_subscribe',
             data: {
                 groupchat_id: groupchat_id
             }
@@ -359,8 +369,20 @@ class AlterdeskAdapter extends Adapter {
     }
 
     addGroupchatToCache(groupchat_id) {
-        this.groupchat_cache.push(groupchat_id);
-        fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache));
+        if(this.groupchat_cache.indexOf(groupchat_id) === -1) {
+            this.robot.logger.info("Adding groupchat to cache", groupchat_id);
+            this.groupchat_cache.push(groupchat_id);
+            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache));
+        }
+    }
+
+    removeGroupchatFromCache(groupchat_id) {
+        var index = this.groupchat_cache.indexOf(groupchat_id);
+        if(index !== -1) {
+            this.robot.logger.info("Removing groupchat from cache", groupchat_id);
+            this.groupchat_cache.splice(index, 1);
+            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache));
+        }
     }
 
     reply(envelope, ...messages) {
