@@ -72,8 +72,9 @@ HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE
 ## Behaviour
 
 ### Authentication
-When Hubot is authenticated on Alterdesk, the chats will be joined that are set in the cache file.
-When auto join is disabled, the cache file can be used to limit Hubot to certain group chats.
+When Hubot is authenticated on Alterdesk, an [authentication event](#Authentication Events) is received as a 
+TopicMessage. The chat ids that are set in the cache file will be joined when auto join is enabled. When auto join is 
+disabled, the cache file can be used to limit Hubot to certain group chats.
 
 ### One to one chat
 Sending and receiving messages in a chat with a single user behave like normal Hubot chats.
@@ -88,17 +89,6 @@ Messages in a group, the user.id contains both the user id and the group id to s
 the adapter. This enables users to chat in a one-to-one chat and a group chat at the same time without mixing the chats 
 up. To retrieve the user id from a group chat message, the user id is set in the parameter user.user_id.
 
-### Presence
-If a user changes its presence, a TopicMessage with the status and an EnterMessage or LeaveMessage is passed to Hubot.
-
-EnterMessage:
-* Online
-* Away
-* Busy
-
-LeaveMessage:
-* Offline
-
 ### Attachments
 Attachments that are received are added to a TextMessage in the parameter attachments.
 
@@ -106,55 +96,66 @@ Attachments that are received are added to a TextMessage in the parameter attach
 If a user tags a chat member, the mention is added to a TextMessage in the parameter mentions.
 The "@All members" mention is not included
 
-### Events
+## Events
 When an messenger event is received, it is sent to the Hubot instance by a TopicMessage.
 
-**Authenticated**
+### Authentication Events
+* *authenticated*
 
-Event *authenticated*
-
+TopicMessage:
 * *user*: Dummy Hubot user data
 * *text*: "authenticated"
 * *id*: Alterdesk user data
 
-**User composing events**
+### User composing events
+* *typing* 
+* *stop_typing*
 
-Events *typing* and *stop_typing*
-
+TopicMessage:
 * *user*: Hubot user data
 * *text*: "EVENT_NAME"
 * *id*: "CHAT_ID"
 
-**User presence events**
+### User presence events
+* *presence_update*
 
-Event *presence_update*
-
+TopicMessage:
 * *user*: Hubot user data
 * *text*: "presence_update"
 * *id*: "STATUS"
 
-**Chat events**
+For the status *online*, *away* and *busy* an EnterMessage is received. For the status *offline* a LeaveMessage is 
+received.
 
-Events *new_conversation*, *new_groupchat*, *groupchat_removed*, *groupchat_closed*, *groupchat_subscribed* and 
-*groupchat_unsubscribed*
+### Chat events
+* *new_conversation*
+* *new_groupchat*
+* *groupchat_removed*
+* *groupchat_closed*
+* *groupchat_subscribed*
+* *groupchat_unsubscribed*
 
+TopicMessage:
 * *user*: Dummy Hubot user data
 * *text*: "EVENT_NAME"
 * *id*: "CHAT_ID"
 
-**Message events**
+### Message events
+* *conversation_message_liked*
+* *conversation_message_deleted*
+* *groupchat_message_liked*
+* *groupchat_message_deleted*
 
-Events *conversation_message_liked*, *conversation_message_deleted*, *groupchat_message_liked* and 
-*groupchat_message_deleted*
-
+TopicMessage:
 * *user*: Hubot user data
 * *text*: "EVENT_NAME"
 * *id*: "MESSAGE_ID"
 
-**Groupchat member events**
+### Groupchat member events
+* *groupchat_members_added* 
+* *groupchat_members_removed*
 
-Events *groupchat_members_added* and *groupchat_members_removed*
-
+TopicMessage:
 * *user*: Hubot user data
 * *text*: "EVENT_NAME"
 * *id*: Alterdesk member added/removed data
@@ -211,5 +212,7 @@ if(message instanceof TextMessage) {
     console.log("User is active on messenger: " + message.user.id);
 } else if(message instanceof LeaveMessage) {
     console.log("User is inactive on messenger: " + message.user.id);
+} else if(message instanceof TopicMessage) {
+    console.log("Event: " + message.text);
 }
 ```
