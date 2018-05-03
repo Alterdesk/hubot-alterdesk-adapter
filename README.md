@@ -163,7 +163,10 @@ TopicMessage:
 ## Example code
 Handling messages in the receiver function of the Hubot instance
 ```javascript
-if(message instanceof TextMessage) {
+// Check for TopicMessage first, TopicMessage is also an instance of TextMessage
+if(message instanceof TopicMessage) {
+    console.log("Event: " + message.text);
+} else if(message instanceof TextMessage) {
     
     var userId;
     var userInGroup = message.user.user_id != null;
@@ -212,7 +215,5 @@ if(message instanceof TextMessage) {
     console.log("User is active on messenger: " + message.user.id);
 } else if(message instanceof LeaveMessage) {
     console.log("User is inactive on messenger: " + message.user.id);
-} else if(message instanceof TopicMessage) {
-    console.log("Event: " + message.text);
 }
 ```
