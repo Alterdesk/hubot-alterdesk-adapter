@@ -380,7 +380,11 @@ class AlterdeskAdapter extends Adapter {
         if(this.groupchat_cache.indexOf(groupchat_id) === -1) {
             this.robot.logger.info("Adding groupchat to cache", groupchat_id);
             this.groupchat_cache.push(groupchat_id);
-            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache));
+            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
+                if(err) {
+                    this.robot.logger.error("Unable to write groupchat cache file", err);
+                }
+            });
         }
     }
 
@@ -389,7 +393,11 @@ class AlterdeskAdapter extends Adapter {
         if(index !== -1) {
             this.robot.logger.info("Removing groupchat from cache", groupchat_id);
             this.groupchat_cache.splice(index, 1);
-            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache));
+            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
+                if(err) {
+                    this.robot.logger.error("Unable to write groupchat cache file", err);
+                }
+            });
         }
     }
 
