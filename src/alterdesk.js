@@ -280,7 +280,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     readConversationEvent(data, event) {
-        var user = new User("dummyId");
+        let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id, is_groupchat: false});
         this.receive(new TopicMessage(user, event, data.conversation_id));
     }
 
