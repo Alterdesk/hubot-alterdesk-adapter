@@ -23,6 +23,9 @@ class AlterdeskAdapter extends Adapter {
             ssl: process.env.HUBOT_ALTERDESK_SSL || 1,
             pmAddPrefix: process.env.HUBOT_ALTERDESK_PM_PREFIX || 1,
             typingDelay: process.env.HUBOT_ALTERDESK_TYPING_DELAY || 2500,
+            typingDelayFactor: process.env.HUBOT_ALTERDESK_TYPING_DELAY_FACTOR,
+            typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
+            typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
             autoJoin: process.env.HUBOT_ALTERDESK_AUTOJOIN || 1,
             groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json')
         };
@@ -341,7 +344,7 @@ class AlterdeskAdapter extends Adapter {
                     groupchat_id: envelope.room
                 }
             }));
-        }, self.options.typingDelay);
+        }, this.calculateTypingDelay(message));
     }
 
     sendConversation(envelope, message) {
@@ -363,7 +366,20 @@ class AlterdeskAdapter extends Adapter {
                     conversation_id: envelope.room
                 }
             }));
-        }, self.options.typingDelay);
+        }, this.calculateTypingDelay(message));
+    }
+
+    calculateTypingDelay(message) {
+        if(this.options.typingDelayFactor && this.options.typingDelayFactor > 0) {
+            var timeoutMs = message.length * this.options.typingDelayFactor;
+            if(this.options.typingDelayMin && timeoutMs < this.options.typingDelayMin) {
+                timeoutMs = this.options.typingDelayMin;
+            } else if(this.options.typingDelayMax && timeoutMs > this.options.typingDelayMax) {
+                timeoutMs = this.options.typingDelayMax;
+            }
+            return timeoutMs;
+        }
+        return this.options.typingDelay;
     }
 
     joinGroupchat(groupchat_id) {

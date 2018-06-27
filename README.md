@@ -61,6 +61,16 @@ HUBOT_ALTERDESK_PM_PREFIX
 HUBOT_ALTERDESK_TYPING_DELAY
 * Milliseconds to show Hubot as "Typing..." before sending message to Alterdesk *(default: 2500)*
 
+HUBOT_ALTERDESK_TYPING_DELAY_FACTOR
+* Milliseconds to show Hubot as "Typing..." per character before sending message to Alterdesk, overrides 
+HUBOT_ALTERDESK_TYPING_DELAY if set
+
+HUBOT_ALTERDESK_TYPING_DELAY_MIN
+* Set a minimum of milliseconds to use with HUBOT_ALTERDESK_TYPING_DELAY_FACTOR 
+
+HUBOT_ALTERDESK_TYPING_DELAY_MAX
+* Set a maximum of milliseconds to use with HUBOT_ALTERDESK_TYPING_DELAY_FACTOR
+
 ### Group chat settings
 HUBOT_ALTERDESK_AUTOJOIN
 * Should automatically join group chats. *(0 = off, 1 = on, default: 1)*
