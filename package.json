@@ -11,7 +11,7 @@
     "url": "https://github.com/Alterdesk/hubot-alterdesk-adapter"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "ws": "^4.0.0",
     "hubot": "^2.19.0"
