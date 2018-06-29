@@ -125,7 +125,12 @@ class AlterdeskAdapter extends Adapter {
                 break;
             case 'conversation_message_liked':
             case 'conversation_message_deleted':
+            case 'conversation_verification_accepted':
+            case 'conversation_verification_rejected':
                 this.readConversationMessageEvent(message.data, message.event);
+                break;
+            case 'conversation_question_answer':
+                this.readConversationQuestionEvent(message.data, message.event);
                 break;
             case 'groupchat_new_message':
                 this.readMessageGroupchat(message.data);
@@ -139,7 +144,12 @@ class AlterdeskAdapter extends Adapter {
                 break;
             case 'groupchat_message_liked':
             case 'groupchat_message_deleted':
+            case 'groupchat_verification_accepted':
+            case 'groupchat_verification_rejected':
                 this.readGroupchatMessageEvent(message.data, message.event);
+                break;
+            case 'groupchat_question_answer':
+                this.readGroupchatQuestionEvent(message.data, message.event);
                 break;
             case 'groupchat_members_added':
             case 'groupchat_members_removed':
@@ -292,6 +302,11 @@ class AlterdeskAdapter extends Adapter {
         this.receive(new TopicMessage(user, event, data.message_id));
     }
 
+    readConversationQuestionEvent(data, event) {
+        let user = this.robot.brain.userForId(data.user_id, {user_id: data.user_id, room: data.user_id, name: data.user_id, is_groupchat: false});
+        this.receive(new TopicMessage(user, event, data));
+    }
+
     readGroupchatEvent(data, event) {
         if(event === "new_groupchat") {
             if (this.options.autoJoin === 1) {
@@ -308,6 +323,11 @@ class AlterdeskAdapter extends Adapter {
     readGroupchatMessageEvent(data, event) {
         let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
         this.receive(new TopicMessage(user, event, data.message_id));
+    }
+
+    readGroupchatQuestionEvent(data, event) {
+        let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
+        this.receive(new TopicMessage(user, event, data));
     }
 
     readGroupchatMemberEvent(data, event) {
