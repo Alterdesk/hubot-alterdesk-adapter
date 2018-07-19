@@ -51,7 +51,7 @@ HUBOT_ALTERDESK_RECONNECT_TRY
 HUBOT_ALTERDESK_RECONNECT_WAIT
 * Milliseconds to wait for a reconnect attempt *(default: 5000)*
 
-HUBOT_ALTERDESK_SSL || 1,
+HUBOT_ALTERDESK_SSL
 * Use SSL to connect to Alterdesk. *(0 = off, 1 = on, default: 1)*
 
 ### Message settings
@@ -137,6 +137,17 @@ TopicMessage:
 For the status *online*, *away* and *busy* an EnterMessage is received. For the status *offline* a LeaveMessage is 
 received.
 
+### User verified events
+* *conversation_verification_accepted*
+* *conversation_verification_rejected*
+* *groupchat_verification_accepted*
+* *groupchat_verification_rejected*
+
+TopicMessage:
+* *user*: Hubot user data
+* *text*: "EVENT_NAME"
+* *id*: "MESSAGE_ID"
+
 ### Chat events
 * *new_conversation*
 * *new_groupchat*
@@ -160,6 +171,15 @@ TopicMessage:
 * *user*: Hubot user data
 * *text*: "EVENT_NAME"
 * *id*: "MESSAGE_ID"
+
+### Question answer events
+* *conversation_question_answer*
+* *groupchat_question_answer*
+
+TopicMessage:
+* *user*: Hubot user data
+* *text*: "EVENT_NAME"
+* *id*: Alterdesk message data
 
 ### Groupchat member events
 * *groupchat_members_added* 
