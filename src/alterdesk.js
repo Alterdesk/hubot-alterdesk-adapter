@@ -391,6 +391,40 @@ class AlterdeskAdapter extends Adapter {
         }, delay);
     }
 
+    topic(envelope, ...messages) {
+        for (let i in messages) {
+            var message = messages[i];
+            if(message !== "typing" && message !== "stop_typing") {
+                continue;
+            }
+            if (envelope.user.is_groupchat) {
+                this.topicGroupchat(envelope, message);
+            } else {
+                this.topicConversation(envelope, message);
+            }
+        }
+    }
+
+    topicGroupchat(envelope, message) {
+        this.robot.logger.debug("topicGroupchat", envelope, message);
+        this.socket.send(JSON.stringify({
+            event: message,
+            data: {
+                groupchat_id: envelope.room
+            }
+        }));
+    }
+
+    topicConversation(envelope, message) {
+        this.robot.logger.debug("topicConversation", envelope, message);
+        this.socket.send(JSON.stringify({
+            event: message,
+            data: {
+                conversation_id: envelope.room
+            }
+        }));
+    }
+
     calculateTypingDelay(message) {
         if(this.options.typingDelayFactor && this.options.typingDelayFactor > 0) {
             var timeoutMs = message.length * this.options.typingDelayFactor;
