@@ -347,7 +347,8 @@ class AlterdeskAdapter extends Adapter {
 
     sendGroupchat(envelope, message) {
         this.robot.logger.debug("sendGroupchat", envelope, message);
-        if (this.options.typingDelay > 0) {
+        var delay = this.calculateTypingDelay(message);
+        if (delay > 0) {
             this.socket.send(JSON.stringify({
                 event: 'typing',
                 data: {
@@ -364,12 +365,13 @@ class AlterdeskAdapter extends Adapter {
                     groupchat_id: envelope.room
                 }
             }));
-        }, this.calculateTypingDelay(message));
+        }, delay);
     }
 
     sendConversation(envelope, message) {
         this.robot.logger.debug("sendConversation", envelope, message);
-        if (this.options.typingDelay > 0) {
+        var delay = this.calculateTypingDelay(message);
+        if (delay > 0) {
             this.socket.send(JSON.stringify({
                 event: 'typing',
                 data: {
@@ -386,7 +388,7 @@ class AlterdeskAdapter extends Adapter {
                     conversation_id: envelope.room
                 }
             }));
-        }, this.calculateTypingDelay(message));
+        }, delay);
     }
 
     calculateTypingDelay(message) {
