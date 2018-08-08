@@ -45,10 +45,8 @@ class AlterdeskAdapter extends Adapter {
     }
 
     reconnect() {
-        let options = this.options;
-
         this.reconnectTryCount += 1;
-        if (this.reconnectTryCount > options.reconnectTry) {
+        if (this.reconnectTryCount > this.options.reconnectTry) {
             this.robot.logger.error('AlterdeskAdapter::reconnect() Unable to reconnect to gateway.');
             process.exit(1);
         }
@@ -56,10 +54,9 @@ class AlterdeskAdapter extends Adapter {
         this.socket.removeEventListener('open', this.onConnected);
         this.socket.removeEventListener('message', this.onData);
 
-        let self = this;
         setTimeout(() => {
-            self.createClient();
-        }, options.reconnectWait);
+            this.createClient();
+        }, this.options.reconnectWait);
     }
 
     createClient() {
@@ -67,23 +64,25 @@ class AlterdeskAdapter extends Adapter {
         this.socket = new WebSocket(`${this.options.ssl === 1 ? 'wss' : 'ws'}://${this.options.host}/v1/gateway`);
         this.socket.on('open', this.onConnected);
         this.socket.on('message', this.onData);
-        let self = this;
-        this.socket.on('close', () => {
-            self.robot.logger.info("AlterdeskAdapter socket closed");
-            if (!self.errorState) {
-                self.robot.logger.info("AlterdeskAdapter socket closed, attempting to reconnect");
-                self.reconnect();
+        this.socket.on('close', (code, message) => {
+            this.robot.logger.info(`AlterdeskAdapter socket closed: ${code} ${message}`);
+            if (!this.errorState) {
+                this.robot.logger.info("AlterdeskAdapter socket closed, attempting to reconnect");
+                this.reconnect();
             }
         });
         this.socket.on('unexpected-response', (req, res) => {
-            self.robot.logger.info(`AlterdeskAdapter socket unexpected response: ${res.statusCode}`);
-            if (!self.errorState) {
-                self.robot.logger.info("AlterdeskAdapter socket unexpected response, attempting to reconnect");
-                self.reconnect();
+            this.robot.logger.info(`AlterdeskAdapter socket unexpected response: ${res.statusCode}`);
+            if (!this.errorState) {
+                this.robot.logger.info("AlterdeskAdapter socket unexpected response, attempting to reconnect");
+                this.reconnect();
             }
         });
         this.socket.on('error', (error) => {
-            self.robot.logger.info(`AlterdeskAdapter socket error: ${error}`);
+            this.robot.logger.info(`AlterdeskAdapter socket error: ${error}`);
+        });
+        this.socket.on('upgrade', (res) => {
+            this.robot.logger.info(`AlterdeskAdapter socket upgrade`);
         });
     }
 
@@ -208,7 +207,6 @@ class AlterdeskAdapter extends Adapter {
         //if no body
         let message = data.body;
         if (typeof message === 'undefined') { //group isn't joined yet, retrieve from api, join groupchat and add to groupchat cache list
-            let self = this;
             if (this.options.autoJoin === 1) {
                 this.joinGroupchat(data.groupchat_id);
                 this.addGroupchatToCache(data.groupchat_id);
@@ -227,7 +225,7 @@ class AlterdeskAdapter extends Adapter {
                         let textMsg = new TextMessage(user, message, data.message_id);
                         textMsg.attachments = data.attachments;
                         textMsg.mentions = data.mentions;
-                        self.receive(textMsg);
+                        this.receive(textMsg);
                     } else {
                         this.robot.logger.error(`AlterdeskAdapter::readMessageGroupchat() Message: ${resp.statusCode}: ${body}`);
                     }
@@ -256,13 +254,12 @@ class AlterdeskAdapter extends Adapter {
         this.connected = true;
         this.reconnectTryCount = 0;
 
-        let self = this;
-        setTimeout(function() {
+        setTimeout(() => {
             var user = new User("dummyId");
-            self.receive(new TopicMessage(user, "authenticated", data.user));
+            this.receive(new TopicMessage(user, "authenticated", data.user));
 
-            for (var i in self.groupchat_cache) {
-                self.joinGroupchat(self.groupchat_cache[i]);
+            for (let i in this.groupchat_cache) {
+                this.joinGroupchat(this.groupchat_cache[i]);
             }
         }, 10);
     }
@@ -336,6 +333,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     send(envelope, ...messages) {
+        this.robot.logger.debug("AlterdeskAdapter::send()", messages.length);
         for (let i in messages) {
             if (envelope.user.is_groupchat) {
                 this.sendGroupchat(envelope, messages[i]);
@@ -347,7 +345,7 @@ class AlterdeskAdapter extends Adapter {
 
     sendGroupchat(envelope, message) {
         this.robot.logger.debug("AlterdeskAdapter::sendGroupchat()", envelope, message);
-        var delay = this.calculateTypingDelay(message);
+        let delay = this.calculateTypingDelay(message);
         if (delay > 0) {
             this.socket.send(JSON.stringify({
                 event: 'typing',
@@ -356,9 +354,8 @@ class AlterdeskAdapter extends Adapter {
                 }
             }));
         }
-        let self = this;
-        setTimeout(function() {
-            self.socket.send(JSON.stringify({
+        setTimeout(() => {
+            this.socket.send(JSON.stringify({
                 event: "groupchat_new_message",
                 data: {
                     body: message,
@@ -370,7 +367,7 @@ class AlterdeskAdapter extends Adapter {
 
     sendConversation(envelope, message) {
         this.robot.logger.debug("AlterdeskAdapter::sendConversation()", envelope, message);
-        var delay = this.calculateTypingDelay(message);
+        let delay = this.calculateTypingDelay(message);
         if (delay > 0) {
             this.socket.send(JSON.stringify({
                 event: 'typing',
@@ -379,9 +376,8 @@ class AlterdeskAdapter extends Adapter {
                 }
             }));
         }
-        let self = this;
-        setTimeout(function() {
-            self.socket.send(JSON.stringify({
+        setTimeout(() => {
+            this.socket.send(JSON.stringify({
                 event: "conversation_new_message",
                 data: {
                     body: message,
@@ -393,7 +389,7 @@ class AlterdeskAdapter extends Adapter {
 
     topic(envelope, ...messages) {
         for (let i in messages) {
-            var message = messages[i];
+            let message = messages[i];
             if(message !== "typing" && message !== "stop_typing") {
                 continue;
             }
@@ -461,7 +457,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     removeGroupchatFromCache(groupchat_id) {
-        var index = this.groupchat_cache.indexOf(groupchat_id);
+        let index = this.groupchat_cache.indexOf(groupchat_id);
         if(index !== -1) {
             this.robot.logger.info("AlterdeskAdapter::removeGroupchatFromCache() Removing groupchat from cache", groupchat_id);
             this.groupchat_cache.splice(index, 1);
