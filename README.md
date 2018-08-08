@@ -78,6 +78,15 @@ HUBOT_ALTERDESK_AUTOJOIN
 HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE
 * Group chat join cache file location *(default: groupchat_cache.json)*
 
+### Error handling settings
+HUBOT_ALTERDESK_EXIT_ON_ERROR
+* Stop the hubot process on uncaught exceptions *(0 = off, 1 = on, default: 1)*
+
+HUBOT_ALTERDESK_LOG_ERRORS
+* Should write uncaught exception errors to log file. *(0 = off, 1 = on, default: 1)*
+
+HUBOT_ALTERDESK_ERROR_LOG_FILE
+* Log file location to write uncaught exception errors in *(default: hubot_error.log)*
 
 ## Behaviour
 

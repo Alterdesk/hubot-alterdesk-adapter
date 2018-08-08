@@ -27,7 +27,10 @@ class AlterdeskAdapter extends Adapter {
             typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
             typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
             autoJoin: process.env.HUBOT_ALTERDESK_AUTOJOIN || 1,
-            groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json')
+            groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json'),
+            exitOnError: process.env.HUBOT_ALTERDESK_EXIT_ON_ERROR || 1,
+            logErrors: process.env.HUBOT_ALTERDESK_LOG_ERRORS || 1,
+            errorLogFile: process.env.HUBOT_ALTERDESK_ERROR_LOG_FILE || path.join(process.cwd(), 'hubot_error.log')
         };
 
         this.robot.logger.info("AlterdeskAdapter::run()", options);
@@ -35,6 +38,22 @@ class AlterdeskAdapter extends Adapter {
         this.options = options;
         this.connected = false;
         this.reconnectTryCount = 0;
+
+        process.on('uncaughtException', (err) => {
+            this.robot.logger.error("AlterdeskAdapter::uncaughtException()", err);
+            if(this.options.logErrors === 1) {
+                let errorMessage = "[" + new Date().toISOString() + "]\n";
+                if(err.stack) {
+                    errorMessage += err.stack + "\n";
+                } else {
+                    errorMessage += err + "\n";
+                }
+                fs.appendFileSync(this.options.errorLogFile, errorMessage);
+            }
+            if(this.options.exitOnError === 1) {
+                process.exit(1);
+            }
+        });
 
         this.groupchat_cache = [];
         if (fs.existsSync(this.options.groupchatCacheFile)) {
