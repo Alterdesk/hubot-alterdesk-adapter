@@ -40,7 +40,7 @@ class AlterdeskAdapter extends Adapter {
         this.reconnectTryCount = 0;
 
         process.on('uncaughtException', (err) => {
-            this.robot.logger.error("AlterdeskAdapter::uncaughtException()", err);
+            this.robot.logger.error("AlterdeskAdapter::uncaughtException()");
             if(this.options.logErrors === 1) {
                 let errorMessage = "[" + new Date().toISOString() + "]\n";
                 if(err.stack) {
