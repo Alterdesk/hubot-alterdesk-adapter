@@ -84,24 +84,39 @@ class AlterdeskAdapter extends Adapter {
         this.socket.on('open', this.onConnected);
         this.socket.on('message', this.onData);
         this.socket.on('close', (code, message) => {
-            this.robot.logger.info(`AlterdeskAdapter socket closed: ${code} ${message}`);
+            this.robot.logger.error(`AlterdeskAdapter socket closed: ${code} ${message}`);
+            if(this.pingInterval) {
+                clearInterval(this.pingInterval);
+                this.pingInterval = null;
+            }
+            if(this.pingTimeout) {
+                clearTimeout(this.pingTimeout);
+                this.pingTimeout = null;
+            }
             if (!this.errorState) {
-                this.robot.logger.info("AlterdeskAdapter socket closed, attempting to reconnect");
+                this.robot.logger.error("AlterdeskAdapter socket closed, attempting to reconnect");
                 this.reconnect();
             }
         });
         this.socket.on('unexpected-response', (req, res) => {
-            this.robot.logger.info(`AlterdeskAdapter socket unexpected response: ${res.statusCode}`);
+            this.robot.logger.error(`AlterdeskAdapter socket unexpected response: ${res.statusCode}`);
             if (!this.errorState) {
                 this.robot.logger.info("AlterdeskAdapter socket unexpected response, attempting to reconnect");
                 this.reconnect();
             }
         });
         this.socket.on('error', (error) => {
-            this.robot.logger.info(`AlterdeskAdapter socket error: ${error}`);
+            this.robot.logger.error(`AlterdeskAdapter socket error: ${error}`);
         });
         this.socket.on('upgrade', (res) => {
             this.robot.logger.info(`AlterdeskAdapter socket upgrade`);
+        });
+        this.socket.on('pong', () => {
+            this.robot.logger.info(`AlterdeskAdapter socket pong`);
+            if(this.pingTimeout) {
+                clearTimeout(this.pingTimeout);
+                this.pingTimeout = null;
+            }
         });
     }
 
@@ -119,6 +134,14 @@ class AlterdeskAdapter extends Adapter {
                 }
             }
         }));
+        this.pingInterval = setInterval(() => {
+            this.robot.logger.info(`AlterdeskAdapter socket ping`);
+            this.socket.ping();
+            this.pingTimeout = setTimeout(() => {
+                this.robot.logger.error(`AlterdeskAdapter socket ping timeout`);
+                this.socket.close();
+            }, 10000);
+        }, 30000);
     }
 
     onData(message) {
