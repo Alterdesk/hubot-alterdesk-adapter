@@ -6,8 +6,8 @@ const os = require('os');
 
 class AlterdeskAdapter extends Adapter {
 
-    constructor(...args) {
-        super(...args);
+    constructor(robot) {
+        super(robot);
         this.onConnected = this.onConnected.bind(this);
         this.onData = this.onData.bind(this);
         this.send = this.send.bind(this);
@@ -18,18 +18,18 @@ class AlterdeskAdapter extends Adapter {
         let options = {
             token: process.env.HUBOT_ALTERDESK_TOKEN,
             host: process.env.HUBOT_ALTERDESK_HOST || "api.alterdesk.com:443",
-            reconnectTry: process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5,
-            reconnectWait: process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000,
-            ssl: process.env.HUBOT_ALTERDESK_SSL || 1,
-            pmAddPrefix: process.env.HUBOT_ALTERDESK_PM_PREFIX || 1,
-            typingDelay: process.env.HUBOT_ALTERDESK_TYPING_DELAY || 2500,
+            reconnectTry: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5),
+            reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000),
+            ssl: parseInt(process.env.HUBOT_ALTERDESK_SSL || 1),
+            pmAddPrefix: parseInt(process.env.HUBOT_ALTERDESK_PM_PREFIX || 1),
+            typingDelay: parseInt(process.env.HUBOT_ALTERDESK_TYPING_DELAY || 2500),
             typingDelayFactor: process.env.HUBOT_ALTERDESK_TYPING_DELAY_FACTOR,
             typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
             typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
-            autoJoin: process.env.HUBOT_ALTERDESK_AUTOJOIN || 1,
+            autoJoin: parseInt(process.env.HUBOT_ALTERDESK_AUTOJOIN || 1),
             groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json'),
-            exitOnError: process.env.HUBOT_ALTERDESK_EXIT_ON_ERROR || 1,
-            logErrors: process.env.HUBOT_ALTERDESK_LOG_ERRORS || 1,
+            exitOnError: parseInt(process.env.HUBOT_ALTERDESK_EXIT_ON_ERROR || 1),
+            logErrors: parseInt(process.env.HUBOT_ALTERDESK_LOG_ERRORS || 1),
             errorLogFile: process.env.HUBOT_ALTERDESK_ERROR_LOG_FILE || path.join(process.cwd(), 'hubot_error.log')
         };
 
