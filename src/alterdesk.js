@@ -50,7 +50,10 @@ class AlterdeskAdapter extends Adapter {
                 }
                 fs.appendFileSync(this.options.errorLogFile, errorMessage);
             }
-            if(this.options.exitOnError === 1) {
+            let exit = this.options.exitOnError === 1;
+            if(this.uncaughtExceptionCallback) {
+                this.uncaughtExceptionCallback(err, exit);
+            } else if(exit) {
                 process.exit(1);
             }
         });
@@ -513,6 +516,10 @@ class AlterdeskAdapter extends Adapter {
 
     reply(envelope, ...messages) {
         this.send(envelope, ...messages);
+    }
+
+    setUncaughtExceptionCallback(callback) {
+        this.uncaughtExceptionCallback = callback;
     }
 }
 
