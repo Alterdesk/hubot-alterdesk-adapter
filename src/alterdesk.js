@@ -300,7 +300,7 @@ class AlterdeskAdapter extends Adapter {
         this.reconnectTryCount = 0;
 
         setTimeout(() => {
-            var user = new User("dummyId");
+            var user = new User("dummy_id");
             this.receive(new TopicMessage(user, "authenticated", data.user));
 
             for (let i in this.groupchat_cache) {
@@ -358,7 +358,7 @@ class AlterdeskAdapter extends Adapter {
         } else if(event === "groupchat_removed" || event === "groupchat_closed") {
             this.removeGroupchatFromCache(data.groupchat_id);
         }
-        var user = new User("dummyId");
+        var user = new User("dummy_id");
         this.receive(new TopicMessage(user, event, data.groupchat_id));
     }
 
