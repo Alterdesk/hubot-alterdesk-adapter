@@ -88,6 +88,7 @@ class AlterdeskAdapter extends Adapter {
         this.socket.on('message', this.onData);
         this.socket.on('close', (code, message) => {
             this.robot.logger.error(`AlterdeskAdapter socket closed: ${code} ${message}`);
+            this.connected = false;
             if(this.pingInterval) {
                 clearInterval(this.pingInterval);
                 this.pingInterval = null;
@@ -104,6 +105,7 @@ class AlterdeskAdapter extends Adapter {
         this.socket.on('unexpected-response', (req, res) => {
             this.robot.logger.error(`AlterdeskAdapter socket unexpected response: ${res.statusCode}`);
             if (!this.errorState) {
+                this.connected = false;
                 this.robot.logger.info("AlterdeskAdapter socket unexpected response, attempting to reconnect");
                 this.reconnect();
             }
@@ -150,6 +152,7 @@ class AlterdeskAdapter extends Adapter {
             }
             this.pingTimeout = setTimeout(() => {
                 this.robot.logger.error(`AlterdeskAdapter socket ping timeout`);
+                this.connected = false;
                 this.socket.close();
             }, 10000);
         }, 30000);
