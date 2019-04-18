@@ -125,21 +125,29 @@ class AlterdeskAdapter extends Adapter {
 
     onConnected() {
         this.robot.logger.info("AlterdeskAdapter::onConnected() WebSocket Connected");
-        this.socket.send(JSON.stringify({
-            event: 'handshake',
-            data: {
-                token: this.options.token,
-                properties: {
-                    os: os.platform(),
-                    browser: "Hubot",
-                    device: "Hubot Alterdesk Adapter",
-                    version: this.robot.version
+        try {
+            this.socket.send(JSON.stringify({
+                event: 'handshake',
+                data: {
+                    token: this.options.token,
+                    properties: {
+                        os: os.platform(),
+                        browser: "Hubot",
+                        device: "Hubot Alterdesk Adapter",
+                        version: this.robot.version
+                    }
                 }
-            }
-        }));
+            }));
+        } catch(err) {
+            this.robot.logger.error("AlterdeskAdapter::onConnected()", err);
+        }
         this.pingInterval = setInterval(() => {
             this.robot.logger.info(`AlterdeskAdapter socket ping`);
-            this.socket.ping();
+            try {
+                this.socket.ping();
+            } catch(err) {
+                this.robot.logger.error("AlterdeskAdapter::onConnected()", err);
+            }
             this.pingTimeout = setTimeout(() => {
                 this.robot.logger.error(`AlterdeskAdapter socket ping timeout`);
                 this.socket.close();
@@ -392,21 +400,29 @@ class AlterdeskAdapter extends Adapter {
         this.robot.logger.debug("AlterdeskAdapter::sendGroupchat()", envelope, message);
         let delay = this.calculateTypingDelay(message);
         if (delay > 0) {
-            this.socket.send(JSON.stringify({
-                event: 'typing',
-                data: {
-                    groupchat_id: envelope.room
-                }
-            }));
+            try {
+                this.socket.send(JSON.stringify({
+                    event: 'typing',
+                    data: {
+                        groupchat_id: envelope.room
+                    }
+                }));
+            } catch(err) {
+                this.robot.logger.error("AlterdeskAdapter::sendGroupchat()", err);
+            }
         }
         setTimeout(() => {
-            this.socket.send(JSON.stringify({
-                event: "groupchat_new_message",
-                data: {
-                    body: message,
-                    groupchat_id: envelope.room
-                }
-            }));
+            try {
+                this.socket.send(JSON.stringify({
+                    event: "groupchat_new_message",
+                    data: {
+                        body: message,
+                        groupchat_id: envelope.room
+                    }
+                }));
+            } catch(err) {
+                this.robot.logger.error("AlterdeskAdapter::sendGroupchat()", err);
+            }
         }, delay);
     }
 
@@ -414,21 +430,29 @@ class AlterdeskAdapter extends Adapter {
         this.robot.logger.debug("AlterdeskAdapter::sendConversation()", envelope, message);
         let delay = this.calculateTypingDelay(message);
         if (delay > 0) {
-            this.socket.send(JSON.stringify({
-                event: 'typing',
-                data: {
-                    conversation_id: envelope.room
-                }
-            }));
+            try {
+                this.socket.send(JSON.stringify({
+                    event: 'typing',
+                    data: {
+                        conversation_id: envelope.room
+                    }
+                }));
+            } catch(err) {
+                this.robot.logger.error("AlterdeskAdapter::sendConversation()", err);
+            }
         }
         setTimeout(() => {
-            this.socket.send(JSON.stringify({
-                event: "conversation_new_message",
-                data: {
-                    body: message,
-                    conversation_id: envelope.room
-                }
-            }));
+            try {
+                this.socket.send(JSON.stringify({
+                    event: "conversation_new_message",
+                    data: {
+                        body: message,
+                        conversation_id: envelope.room
+                    }
+                }));
+            } catch(err) {
+                this.robot.logger.error("AlterdeskAdapter::sendConversation()", err);
+            }
         }, delay);
     }
 
@@ -448,22 +472,30 @@ class AlterdeskAdapter extends Adapter {
 
     topicGroupchat(envelope, message) {
         this.robot.logger.debug("AlterdeskAdapter::topicGroupchat()", envelope, message);
-        this.socket.send(JSON.stringify({
-            event: message,
-            data: {
-                groupchat_id: envelope.room
-            }
-        }));
+        try {
+            this.socket.send(JSON.stringify({
+                event: message,
+                data: {
+                    groupchat_id: envelope.room
+                }
+            }));
+        } catch(err) {
+            this.robot.logger.error("AlterdeskAdapter::topicGroupchat()", err);
+        }
     }
 
     topicConversation(envelope, message) {
         this.robot.logger.debug("AlterdeskAdapter::topicConversation()", envelope, message);
-        this.socket.send(JSON.stringify({
-            event: message,
-            data: {
-                conversation_id: envelope.room
-            }
-        }));
+        try {
+            this.socket.send(JSON.stringify({
+                event: message,
+                data: {
+                    conversation_id: envelope.room
+                }
+            }));
+        } catch(err) {
+            this.robot.logger.error("AlterdeskAdapter::topicConversation()", err);
+        }
     }
 
     calculateTypingDelay(message) {
@@ -481,12 +513,16 @@ class AlterdeskAdapter extends Adapter {
 
     joinGroupchat(groupchat_id) {
         this.robot.logger.info(`AlterdeskAdapter::joinGroupchat() Joining groupchat with id '${groupchat_id}'`);
-        this.socket.send(JSON.stringify({
-            event: 'groupchat_subscribe',
-            data: {
-                groupchat_id: groupchat_id
-            }
-        }));
+        try {
+            this.socket.send(JSON.stringify({
+                event: 'groupchat_subscribe',
+                data: {
+                    groupchat_id: groupchat_id
+                }
+            }));
+        } catch(err) {
+            this.robot.logger.error("AlterdeskAdapter::joinGroupchat()", err);
+        }
     }
 
     addGroupchatToCache(groupchat_id) {
