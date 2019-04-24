@@ -22,7 +22,7 @@ class AlterdeskAdapter extends Adapter {
             reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000),
             ssl: parseInt(process.env.HUBOT_ALTERDESK_SSL || 1),
             pmAddPrefix: parseInt(process.env.HUBOT_ALTERDESK_PM_PREFIX || 1),
-            typingDelay: parseInt(process.env.HUBOT_ALTERDESK_TYPING_DELAY || 2500),
+            typingDelay: parseInt(process.env.HUBOT_ALTERDESK_TYPING_DELAY || 500),
             typingDelayFactor: process.env.HUBOT_ALTERDESK_TYPING_DELAY_FACTOR,
             typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
             typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
