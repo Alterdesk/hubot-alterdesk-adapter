@@ -29,6 +29,7 @@ class AlterdeskAdapter extends Adapter {
             autoJoin: parseInt(process.env.HUBOT_ALTERDESK_AUTOJOIN || 1),
             groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json'),
             exitOnError: parseInt(process.env.HUBOT_ALTERDESK_EXIT_ON_ERROR || 1),
+            logPings: parseInt(process.env.HUBOT_ALTERDESK_LOG_PINGS || 0),
             logErrors: parseInt(process.env.HUBOT_ALTERDESK_LOG_ERRORS || 1),
             errorLogFile: process.env.HUBOT_ALTERDESK_ERROR_LOG_FILE || path.join(process.cwd(), 'hubot_error.log')
         };
@@ -117,7 +118,9 @@ class AlterdeskAdapter extends Adapter {
             this.robot.logger.info(`AlterdeskAdapter socket upgrade`);
         });
         this.socket.on('pong', () => {
-            this.robot.logger.info(`AlterdeskAdapter socket pong`);
+            if(this.options.logPings === 1) {
+                this.robot.logger.info(`AlterdeskAdapter socket pong`);
+            }
             if(this.pingTimeout) {
                 clearTimeout(this.pingTimeout);
                 this.pingTimeout = null;
@@ -144,7 +147,9 @@ class AlterdeskAdapter extends Adapter {
             this.robot.logger.error("AlterdeskAdapter::onConnected()", err);
         }
         this.pingInterval = setInterval(() => {
-            this.robot.logger.info(`AlterdeskAdapter socket ping`);
+            if(this.options.logPings === 1) {
+                this.robot.logger.info(`AlterdeskAdapter socket ping`);
+            }
             try {
                 this.socket.ping();
             } catch(err) {
