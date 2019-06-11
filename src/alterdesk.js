@@ -29,6 +29,7 @@ class AlterdeskAdapter extends Adapter {
             typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
             typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
             autoJoin: parseInt(process.env.HUBOT_ALTERDESK_AUTOJOIN || 1),
+            groupchatUseCache: parseInt(process.env.HUBOT_ALTERDESK_GROUPCHAT_USE_CACHE || 1),
             groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json'),
             exitOnError: parseInt(process.env.HUBOT_ALTERDESK_EXIT_ON_ERROR || 1),
             logPings: parseInt(process.env.HUBOT_ALTERDESK_LOG_PINGS || 0),
@@ -62,7 +63,7 @@ class AlterdeskAdapter extends Adapter {
         });
 
         this.groupchat_cache = [];
-        if (fs.existsSync(this.options.groupchatCacheFile)) {
+        if (this.options.groupchatUseCache === 1 && fs.existsSync(this.options.groupchatCacheFile)) {
             let data = JSON.parse(fs.readFileSync(this.options.groupchatCacheFile));
             this.groupchat_cache = this.groupchat_cache.concat(data);
         }
@@ -536,28 +537,36 @@ class AlterdeskAdapter extends Adapter {
     }
 
     addGroupchatToCache(groupchat_id) {
-        if(this.groupchat_cache.indexOf(groupchat_id) === -1) {
-            this.logger.info("AlterdeskAdapter::addGroupchatToCache() Adding groupchat to cache", groupchat_id);
-            this.groupchat_cache.push(groupchat_id);
-            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
-                if(err) {
-                    this.logger.error("AlterdeskAdapter::addGroupchatToCache() Unable to write groupchat cache file", err);
-                }
-            });
+        if(this.options.groupchatUseCache !== 1) {
+            return;
         }
+        if(this.groupchat_cache.indexOf(groupchat_id) !== -1) {
+            return;
+        }
+        this.logger.info("AlterdeskAdapter::addGroupchatToCache() Adding groupchat to cache", groupchat_id);
+        this.groupchat_cache.push(groupchat_id);
+        fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
+            if(err) {
+                this.logger.error("AlterdeskAdapter::addGroupchatToCache() Unable to write groupchat cache file", err);
+            }
+        });
     }
 
     removeGroupchatFromCache(groupchat_id) {
-        let index = this.groupchat_cache.indexOf(groupchat_id);
-        if(index !== -1) {
-            this.logger.info("AlterdeskAdapter::removeGroupchatFromCache() Removing groupchat from cache", groupchat_id);
-            this.groupchat_cache.splice(index, 1);
-            fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
-                if(err) {
-                    this.logger.error("AlterdeskAdapter::removeGroupchatFromCache() Unable to write groupchat cache file", err);
-                }
-            });
+        if(this.options.groupchatUseCache !== 1) {
+            return;
         }
+        let index = this.groupchat_cache.indexOf(groupchat_id);
+        if(index === -1) {
+            return;
+        }
+        this.logger.info("AlterdeskAdapter::removeGroupchatFromCache() Removing groupchat from cache", groupchat_id);
+        this.groupchat_cache.splice(index, 1);
+        fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
+            if(err) {
+                this.logger.error("AlterdeskAdapter::removeGroupchatFromCache() Unable to write groupchat cache file", err);
+            }
+        });
     }
 
     reply(envelope, ...messages) {
