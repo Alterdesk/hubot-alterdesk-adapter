@@ -62,6 +62,7 @@ class AlterdeskAdapter extends Adapter {
             }
         });
 
+        this.joined_groupchats = [];
         this.groupchat_cache = [];
         if (this.options.groupchatUseCache === 1 && fs.existsSync(this.options.groupchatCacheFile)) {
             let data = JSON.parse(fs.readFileSync(this.options.groupchatCacheFile));
@@ -92,7 +93,7 @@ class AlterdeskAdapter extends Adapter {
         this.socket.on('message', this.onData);
         this.socket.on('close', (code, message) => {
             this.logger.error(`AlterdeskAdapter socket closed: ${code} ${message}`);
-            this.connected = false;
+            this.cleanConnection();
             if(this.pingInterval) {
                 clearInterval(this.pingInterval);
                 this.pingInterval = null;
@@ -109,7 +110,7 @@ class AlterdeskAdapter extends Adapter {
         this.socket.on('unexpected-response', (req, res) => {
             this.logger.error(`AlterdeskAdapter socket unexpected response: ${res.statusCode}`);
             if (!this.errorState) {
-                this.connected = false;
+                this.cleanConnection();
                 this.logger.info("AlterdeskAdapter socket unexpected response, attempting to reconnect");
                 this.reconnect();
             }
@@ -129,6 +130,11 @@ class AlterdeskAdapter extends Adapter {
                 this.pingTimeout = null;
             }
         });
+    }
+
+    cleanConnection() {
+        this.connected = false;
+        this.joined_groupchats.length = 0;
     }
 
     onConnected() {
@@ -160,7 +166,7 @@ class AlterdeskAdapter extends Adapter {
             }
             this.pingTimeout = setTimeout(() => {
                 this.logger.error(`AlterdeskAdapter socket ping timeout`);
-                this.connected = false;
+                this.cleanConnection();
                 this.socket.close();
             }, 10000);
         }, 30000);
@@ -222,13 +228,13 @@ class AlterdeskAdapter extends Adapter {
                 this.logger.error("AlterdeskAdapter::onData() Gateway Error", message);
                 if(message.data.code === 304) {
                     if(message.data.error === 'groupchat_is_closed') {
-                        this.removeGroupchatFromCache(message.data.groupchat_id);
+                        this.leaveGroupchat(message.data.groupchat_id, true);
                     }
                 } else if (message.data.code === 403) { //forbidden
                     this.errorState = true;
                 } else if(message.data.code === 404) {
                     if(message.data.error === 'groupchat_not_found') {
-                        this.removeGroupchatFromCache(message.data.groupchat_id);
+                        this.leaveGroupchat(message.data.groupchat_id, true);
                     }
                 }
                 break;
@@ -261,6 +267,9 @@ class AlterdeskAdapter extends Adapter {
 
     readMessageGroupchat(data) {
         this.logger.debug("AlterdeskAdapter::readMessageGroupchat()", data);
+        if (this.options.autoJoin === 1) {
+            this.joinGroupchat(data.groupchat_id);
+        }
 
         let user = this.robot.brain.userForId(data.groupchat_id + data.user_id, {user_id: data.user_id, room: data.groupchat_id, is_groupchat: true});
 
@@ -272,8 +281,6 @@ class AlterdeskAdapter extends Adapter {
         let message = data.body;
         if (typeof message === 'undefined') { //group isn't joined yet, retrieve from api, join groupchat and add to groupchat cache list
             if (this.options.autoJoin === 1) {
-                this.joinGroupchat(data.groupchat_id);
-                this.addGroupchatToCache(data.groupchat_id);
                 this.logger.debug(`AlterdeskAdapter::readMessageGroupchat() Retrieving message ${data.message_id} in group ${data.groupchat_id}`);
                 this.robot.http(`${this.options.ssl === 1 ? 'https' : 'http'}://${this.options.host}/v1/groupchats/${data.groupchat_id}/messages/${data.message_id}`).header('Authorization', `Bearer ${this.options.token}`).get()((err, resp, body) => {
                     if (resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
@@ -372,10 +379,13 @@ class AlterdeskAdapter extends Adapter {
         if(event === "new_groupchat") {
             if (this.options.autoJoin === 1) {
                 this.joinGroupchat(data.groupchat_id);
-                this.addGroupchatToCache(data.groupchat_id);
             }
+        } else if(event == "groupchat_subscribed") {
+            this.joined_groupchats.push(data.groupchat_id);
+        } else if(event == "groupchat_unsubscribed") {
+            this.leaveGroupchat(data.groupchat_id, false)
         } else if(event === "groupchat_removed" || event === "groupchat_closed") {
-            this.removeGroupchatFromCache(data.groupchat_id);
+            this.leaveGroupchat(data.groupchat_id, true);
         }
         var user = new User("dummy_id");
         this.receive(new TopicMessage(user, event, data.groupchat_id));
@@ -409,6 +419,7 @@ class AlterdeskAdapter extends Adapter {
 
     sendGroupchat(envelope, message) {
         this.logger.debug("AlterdeskAdapter::sendGroupchat()", envelope, message);
+        this.joinGroupchat(envelope.room);
         let delay = this.calculateTypingDelay(message);
         if (delay > 0) {
             try {
@@ -483,6 +494,7 @@ class AlterdeskAdapter extends Adapter {
 
     topicGroupchat(envelope, message) {
         this.logger.debug("AlterdeskAdapter::topicGroupchat()", envelope, message);
+        this.joinGroupchat(envelope.room);
         try {
             this.socket.send(JSON.stringify({
                 event: message,
@@ -523,7 +535,11 @@ class AlterdeskAdapter extends Adapter {
     }
 
     joinGroupchat(groupchat_id) {
-        this.logger.info(`AlterdeskAdapter::joinGroupchat() Joining groupchat with id '${groupchat_id}'`);
+        if(this.joined_groupchats.indexOf(groupchat_id) !== -1) {
+            this.logger.info("AlterdeskAdapter::joinGroupchat() Already joined groupchat with id ", groupchat_id);
+            return;
+        }
+        this.logger.info("AlterdeskAdapter::joinGroupchat() Joining groupchat with id ", groupchat_id);
         try {
             this.socket.send(JSON.stringify({
                 event: 'groupchat_subscribe',
@@ -534,37 +550,40 @@ class AlterdeskAdapter extends Adapter {
         } catch(err) {
             this.logger.error("AlterdeskAdapter::joinGroupchat()", err);
         }
-    }
-
-    addGroupchatToCache(groupchat_id) {
         if(this.options.groupchatUseCache !== 1) {
             return;
         }
         if(this.groupchat_cache.indexOf(groupchat_id) !== -1) {
             return;
         }
-        this.logger.info("AlterdeskAdapter::addGroupchatToCache() Adding groupchat to cache", groupchat_id);
+        this.logger.info("AlterdeskAdapter::joinGroupchat() Adding groupchat to cache", groupchat_id);
         this.groupchat_cache.push(groupchat_id);
         fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
             if(err) {
-                this.logger.error("AlterdeskAdapter::addGroupchatToCache() Unable to write groupchat cache file", err);
+                this.logger.error("AlterdeskAdapter::joinGroupchat() Unable to write groupchat cache file", err);
             }
         });
     }
 
-    removeGroupchatFromCache(groupchat_id) {
-        if(this.options.groupchatUseCache !== 1) {
+    leaveGroupchat(groupchat_id, remove_from_cache) {
+        let joined_index = this.joined_groupchats.indexOf(groupchat_id);
+        if(joined_index === -1) {
+            this.logger.info("AlterdeskAdapter::leaveGroupchat() Not joined in groupchat with id ", groupchat_id);
             return;
         }
-        let index = this.groupchat_cache.indexOf(groupchat_id);
-        if(index === -1) {
+        this.joined_groupchats.splice(joined_index, 1);
+        if(!remove_from_cache || this.options.groupchatUseCache !== 1) {
             return;
         }
-        this.logger.info("AlterdeskAdapter::removeGroupchatFromCache() Removing groupchat from cache", groupchat_id);
-        this.groupchat_cache.splice(index, 1);
+        let cache_index = this.groupchat_cache.indexOf(groupchat_id);
+        if(cache_index === -1) {
+            return;
+        }
+        this.logger.info("AlterdeskAdapter::leaveGroupchat() Removing groupchat from cache", groupchat_id);
+        this.groupchat_cache.splice(cache_index, 1);
         fs.writeFile(this.options.groupchatCacheFile, JSON.stringify(this.groupchat_cache), (err) => {
             if(err) {
-                this.logger.error("AlterdeskAdapter::removeGroupchatFromCache() Unable to write groupchat cache file", err);
+                this.logger.error("AlterdeskAdapter::leaveGroupchat() Unable to write groupchat cache file", err);
             }
         });
     }
