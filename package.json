@@ -15,6 +15,6 @@
   "dependencies": {
     "ws": "^4.0.0",
     "hubot": "^2.19.0",
-    "node-messenger-log": "git+ssh://git@npm.gitlab.alterdesk.com:zaurus/node-messenger-log.git"
+    "node-messenger-log": "https://github.com/Alterdesk/node-messenger-log.git"
   }
 }
