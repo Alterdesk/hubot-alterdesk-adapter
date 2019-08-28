@@ -1,5 +1,6 @@
 const Logger = require('node-messenger-log');
-const {Adapter, Robot, User, TextMessage, EnterMessage, LeaveMessage, TopicMessage} = require('hubot');
+const {Robot, User, TextMessage, EnterMessage, LeaveMessage, TopicMessage} = require('hubot');
+const Adapter = require.main.require('hubot/src/adapter');
 const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
