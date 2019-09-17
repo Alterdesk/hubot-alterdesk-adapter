@@ -24,17 +24,17 @@ class AlterdeskAdapter extends Adapter {
             reconnectTry: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5),
             reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000),
             ssl: parseInt(process.env.HUBOT_ALTERDESK_SSL || 1),
-            pmAddPrefix: parseInt(process.env.HUBOT_ALTERDESK_PM_PREFIX || 1),
+            pmAddPrefix: parseInt(process.env.HUBOT_ALTERDESK_PM_PREFIX || 0),
             typingDelay: parseInt(process.env.HUBOT_ALTERDESK_TYPING_DELAY || 500),
             typingDelayFactor: process.env.HUBOT_ALTERDESK_TYPING_DELAY_FACTOR,
             typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
             typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
             autoJoin: parseInt(process.env.HUBOT_ALTERDESK_AUTOJOIN || 1),
-            groupchatUseCache: parseInt(process.env.HUBOT_ALTERDESK_GROUPCHAT_USE_CACHE || 1),
+            groupchatUseCache: parseInt(process.env.HUBOT_ALTERDESK_GROUPCHAT_USE_CACHE || 0),
             groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json'),
             exitOnError: parseInt(process.env.HUBOT_ALTERDESK_EXIT_ON_ERROR || 1),
             logPings: parseInt(process.env.HUBOT_ALTERDESK_LOG_PINGS || 0),
-            logErrors: parseInt(process.env.HUBOT_ALTERDESK_LOG_ERRORS || 1),
+            logErrors: parseInt(process.env.HUBOT_ALTERDESK_LOG_ERRORS || 0),
             errorLogFile: process.env.HUBOT_ALTERDESK_ERROR_LOG_FILE || path.join(process.cwd(), 'hubot_error.log')
         };
 
