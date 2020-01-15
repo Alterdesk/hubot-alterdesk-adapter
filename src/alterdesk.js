@@ -536,6 +536,9 @@ class AlterdeskAdapter extends Adapter {
     }
 
     joinGroupchat(groupchat_id) {
+        if(!groupchat_id || groupchat_id === "") {
+            return;
+        }
         if(this.joined_groupchats.indexOf(groupchat_id) !== -1) {
             this.logger.info("AlterdeskAdapter::joinGroupchat() Already joined groupchat with id ", groupchat_id);
             return;
@@ -567,6 +570,9 @@ class AlterdeskAdapter extends Adapter {
     }
 
     leaveGroupchat(groupchat_id, remove_from_cache) {
+        if(!groupchat_id || groupchat_id === "") {
+            return;
+        }
         let joined_index = this.joined_groupchats.indexOf(groupchat_id);
         if(joined_index === -1) {
             this.logger.info("AlterdeskAdapter::leaveGroupchat() Not joined in groupchat with id ", groupchat_id);
