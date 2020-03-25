@@ -29,6 +29,7 @@ class AlterdeskAdapter extends Adapter {
             typingDelayFactor: process.env.HUBOT_ALTERDESK_TYPING_DELAY_FACTOR,
             typingDelayMin: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MIN,
             typingDelayMax: process.env.HUBOT_ALTERDESK_TYPING_DELAY_MAX,
+            useJoin: parseInt(process.env.HUBOT_ALTERDESK_USE_JOIN || 1),
             autoJoin: parseInt(process.env.HUBOT_ALTERDESK_AUTOJOIN || 1),
             groupchatUseCache: parseInt(process.env.HUBOT_ALTERDESK_GROUPCHAT_USE_CACHE || 0),
             groupchatCacheFile: process.env.HUBOT_ALTERDESK_GROUPCHAT_CACHEFILE || path.join(process.cwd(), 'groupchat_cache.json'),
@@ -536,7 +537,7 @@ class AlterdeskAdapter extends Adapter {
     }
 
     joinGroupchat(groupchat_id) {
-        if(!groupchat_id || groupchat_id === "") {
+        if(this.options.useJoin === 0 || !groupchat_id || groupchat_id === "") {
             return;
         }
         if(this.joined_groupchats.indexOf(groupchat_id) !== -1) {
