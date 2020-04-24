@@ -423,61 +423,73 @@ class AlterdeskAdapter extends Adapter {
         this.logger.debug("AlterdeskAdapter::sendGroupchat()", envelope, message);
         this.joinGroupchat(envelope.room);
         let delay = this.calculateTypingDelay(message);
-        if (delay > 0) {
-            try {
-                this.socket.send(JSON.stringify({
-                    event: 'typing',
-                    data: {
-                        groupchat_id: envelope.room
-                    }
-                }));
-            } catch(err) {
-                this.logger.error("AlterdeskAdapter::sendGroupchat()", err);
-            }
+        if(delay < 1) {
+            this.sendGroupchatMessage(envelope, message);
+            return;
+        }
+        try {
+            this.socket.send(JSON.stringify({
+                event: 'typing',
+                data: {
+                    groupchat_id: envelope.room
+                }
+            }));
+        } catch(err) {
+            this.logger.error("AlterdeskAdapter::sendGroupchat()", err);
         }
         setTimeout(() => {
-            try {
-                this.socket.send(JSON.stringify({
-                    event: "groupchat_new_message",
-                    data: {
-                        body: message,
-                        groupchat_id: envelope.room
-                    }
-                }));
-            } catch(err) {
-                this.logger.error("AlterdeskAdapter::sendGroupchat()", err);
-            }
+            this.sendGroupchatMessage(envelope, message);
         }, delay);
+    }
+
+    sendGroupchatMessage(envelope, message) {
+        try {
+            this.socket.send(JSON.stringify({
+                event: "groupchat_new_message",
+                data: {
+                    body: message,
+                    groupchat_id: envelope.room
+                }
+            }));
+        } catch(err) {
+            this.logger.error("AlterdeskAdapter::sendGroupchatMessage()", err);
+        }
     }
 
     sendConversation(envelope, message) {
         this.logger.debug("AlterdeskAdapter::sendConversation()", envelope, message);
         let delay = this.calculateTypingDelay(message);
-        if (delay > 0) {
-            try {
-                this.socket.send(JSON.stringify({
-                    event: 'typing',
-                    data: {
-                        conversation_id: envelope.room
-                    }
-                }));
-            } catch(err) {
-                this.logger.error("AlterdeskAdapter::sendConversation()", err);
-            }
+        if(delay < 1) {
+            this.sendConversationMessage(envelope, message);
+            return;
+        }
+        try {
+            this.socket.send(JSON.stringify({
+                event: 'typing',
+                data: {
+                    conversation_id: envelope.room
+                }
+            }));
+        } catch(err) {
+            this.logger.error("AlterdeskAdapter::sendConversation()", err);
         }
         setTimeout(() => {
-            try {
-                this.socket.send(JSON.stringify({
-                    event: "conversation_new_message",
-                    data: {
-                        body: message,
-                        conversation_id: envelope.room
-                    }
-                }));
-            } catch(err) {
-                this.logger.error("AlterdeskAdapter::sendConversation()", err);
-            }
+            this.sendConversationMessage(envelope, message);
         }, delay);
+    }
+
+    sendConversationMessage(envelope, message) {
+        try {
+            this.socket.send(JSON.stringify({
+                event: "conversation_new_message",
+                data: {
+                    body: message,
+                    conversation_id: envelope.room
+                }
+            }));
+        } catch(err) {
+            this.logger.error("AlterdeskAdapter::sendConversationMessage()", err);
+        }
     }
 
     topic(envelope, ...messages) {
