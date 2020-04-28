@@ -13,8 +13,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "ws": "^7.1.1",
     "hubot": "^3.3.2",
-    "node-messenger-log": "https://github.com/Alterdesk/node-messenger-log.git"
+    "node-messenger-log": "^1.0.0",
+    "ws": "^7.1.1"
   }
 }
