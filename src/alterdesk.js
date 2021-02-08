@@ -1,5 +1,5 @@
 const Logger = require('node-messenger-log');
-const {Robot, User, TextMessage, EnterMessage, LeaveMessage, TopicMessage} = require('hubot');
+const {User, TextMessage, EnterMessage, LeaveMessage, TopicMessage} = require('hubot');
 const Adapter = require.main.require('hubot/src/adapter');
 const WebSocket = require('ws');
 const fs = require('fs');
@@ -261,7 +261,7 @@ class AlterdeskAdapter extends Adapter {
             message = this.robot.name +" "+message;
         }
         this.logger.info(`AlterdeskAdapter::readConversation() Received message: ${message} in room: ${user.room}, from ${user.name}`);
-        var textMessage = new TextMessage(user, message, data.message_id);
+        let textMessage = new TextMessage(user, message, data.message_id);
         textMessage.attachments = data.attachments;
         textMessage.mentions = data.mentions;
         return this.receive(textMessage);
@@ -287,7 +287,7 @@ class AlterdeskAdapter extends Adapter {
                 this.robot.http(`${this.options.ssl === 1 ? 'https' : 'http'}://${this.options.host}/v1/groupchats/${data.groupchat_id}/messages/${data.message_id}`).header('Authorization', `Bearer ${this.options.token}`).get()((err, resp, body) => {
                     if (resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
                         this.logger.debug(`AlterdeskAdapter::readMessageGroupchat() Message: ${resp.statusCode}: ${body}`);
-                        var msgObject = JSON.parse(body);
+                        let msgObject = JSON.parse(body);
                         message = msgObject.body;
                         if (
                             this.options.pmAddPrefix === 1 &&
@@ -314,7 +314,7 @@ class AlterdeskAdapter extends Adapter {
             message = this.robot.name +" "+message;
         }
         this.logger.info(`AlterdeskAdapter::readMessageGroupchat() Received message: ${message} in room: ${user.room}, from ${user.name}`);
-        var textMessage = new TextMessage(user, message, data.message_id);
+        let textMessage = new TextMessage(user, message, data.message_id);
         textMessage.attachments = data.attachments;
         textMessage.mentions = data.mentions;
         return this.receive(textMessage);
@@ -328,11 +328,11 @@ class AlterdeskAdapter extends Adapter {
         this.reconnectTryCount = 0;
 
         setTimeout(() => {
-            var user = new User("dummy_id");
+            let user = new User("dummy_id");
             this.receive(new TopicMessage(user, "authenticated", data.user));
 
-            for (let i in this.groupchat_cache) {
-                this.joinGroupchat(this.groupchat_cache[i]);
+            for (let group of this.groupchat_cache) {
+                this.joinGroupchat(group);
             }
         }, 10);
     }
@@ -389,7 +389,7 @@ class AlterdeskAdapter extends Adapter {
         } else if(event === "groupchat_removed" || event === "groupchat_closed") {
             this.leaveGroupchat(data.groupchat_id, true);
         }
-        var user = new User("dummy_id");
+        let user = new User("dummy_id");
         this.receive(new TopicMessage(user, event, data.groupchat_id));
     }
 
@@ -537,7 +537,7 @@ class AlterdeskAdapter extends Adapter {
 
     calculateTypingDelay(message) {
         if(this.options.typingDelayFactor && this.options.typingDelayFactor > 0) {
-            var timeoutMs = message.length * this.options.typingDelayFactor;
+            let timeoutMs = message.length * this.options.typingDelayFactor;
             if(this.options.typingDelayMin && timeoutMs < this.options.typingDelayMin) {
                 timeoutMs = this.options.typingDelayMin;
             } else if(this.options.typingDelayMax && timeoutMs > this.options.typingDelayMax) {
