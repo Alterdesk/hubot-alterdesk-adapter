@@ -1,6 +1,6 @@
 {
   "name": "hubot-alterdesk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Alterdesk adapter for hubot",
   "main": "./src/alterdesk.js",
   "scripts": {
