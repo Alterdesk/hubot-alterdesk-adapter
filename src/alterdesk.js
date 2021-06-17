@@ -21,8 +21,8 @@ class AlterdeskAdapter extends Adapter {
         let options = {
             token: process.env.HUBOT_ALTERDESK_TOKEN,
             host: process.env.HUBOT_ALTERDESK_HOST || "api.alterdesk.com:443",
-            reconnectTry: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 5),
-            reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 5000),
+            reconnectTry: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 0),
+            reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 10000),
             ssl: parseInt(process.env.HUBOT_ALTERDESK_SSL || 1),
             pmAddPrefix: parseInt(process.env.HUBOT_ALTERDESK_PM_PREFIX || 0),
             typingDelay: parseInt(process.env.HUBOT_ALTERDESK_TYPING_DELAY || 500),
@@ -44,6 +44,7 @@ class AlterdeskAdapter extends Adapter {
         this.options = options;
         this.connected = false;
         this.reconnectTryCount = 0;
+        this.reconnectMs = 0;
 
         process.on('uncaughtException', (err) => {
             this.logger.error("AlterdeskAdapter::uncaughtException()");
@@ -75,22 +76,44 @@ class AlterdeskAdapter extends Adapter {
 
     reconnect() {
         this.reconnectTryCount += 1;
-        if (this.reconnectTryCount > this.options.reconnectTry) {
-            this.logger.error('AlterdeskAdapter::reconnect() Unable to reconnect to gateway.');
-            process.exit(1);
+        if (this.options.reconnectTry > 0 && this.reconnectTryCount > this.options.reconnectTry) {
+            let errorMessage = 'AlterdeskAdapter::reconnect() Unable to reconnect to gateway.';
+            this.logger.error(errorMessage);
+            let exit = this.options.exitOnError === 1;
+            if(this.uncaughtExceptionCallback) {
+                let err = new Error(errorMessage);
+                this.uncaughtExceptionCallback(err, exit);
+            } else if(exit) {
+                process.exit(1);
+            }
+        }
+        if(this.reconnectTryCount === 10 && this.uncaughtExceptionCallback) {
+            let errorMessage = 'AlterdeskAdapter::reconnect() Unable to reconnect to gateway after 10 attempts.';
+            this.logger.error(errorMessage);
+            let err = new Error(errorMessage);
+            this.uncaughtExceptionCallback(err, false);
         }
 
         this.socket.removeEventListener('open', this.onConnected);
         this.socket.removeEventListener('message', this.onData);
 
+        this.reconnectMs += 500 + Math.floor((this.options.reconnectWait / 10) * Math.random());
+        if(this.reconnectMs > this.options.reconnectWait) {
+            this.reconnectMs = this.options.reconnectWait;
+        }
+        this.logger.error('AlterdeskAdapter::reconnect() retry:', this.reconnectTryCount, 'ms:', this.reconnectMs);
         setTimeout(() => {
             this.createClient();
-        }, this.options.reconnectWait);
+        }, this.reconnectMs);
     }
 
     createClient() {
         this.errorState = false;
-        this.socket = new WebSocket(`${this.options.ssl === 1 ? 'wss' : 'ws'}://${this.options.host}/v1/gateway`);
+        let websocketUrl = `${this.options.ssl === 1 ? 'wss' : 'ws'}://${this.options.host}/v1/gateway`;
+        let websocketOptions = {};
+        websocketOptions.handshakeTimeout = 5000;
+        this.logger.info('AlterdeskAdapter::createClient() websocketUrl:', websocketUrl);
+        this.socket = new WebSocket(websocketUrl, null, websocketOptions);
         this.socket.on('open', this.onConnected);
         this.socket.on('message', this.onData);
         this.socket.on('close', (code, message) => {
@@ -157,6 +180,11 @@ class AlterdeskAdapter extends Adapter {
         } catch(err) {
             this.logger.error("AlterdeskAdapter::onConnected()", err);
         }
+        this.authenticatedTimer = setTimeout(() => {
+            this.logger.error("AlterdeskAdapter did not receive authenticated response");
+            this.cleanConnection();
+            this.socket.close();
+        }, 5000);
         this.pingInterval = setInterval(() => {
             if(this.options.logPings === 1) {
                 this.logger.info(`AlterdeskAdapter socket ping`);
@@ -321,11 +349,16 @@ class AlterdeskAdapter extends Adapter {
     }
 
     readAuthenticated(data) {
+        if(this.authenticatedTimer) {
+            clearTimeout(this.authenticatedTimer);
+            this.authenticatedTimer = null;
+        }
         this.robot.user = data.user;
         this.logger.info(`AlterdeskAdapter::readAuthenticated() Authenticated on Gateway as ${data.user.first_name} ${data.user.last_name} from ${data.user.company_name}`);
         this.emit((this.connected?'reconnected':'connected'));
         this.connected = true;
         this.reconnectTryCount = 0;
+        this.reconnectMs = 0;
 
         setTimeout(() => {
             let user = new User("dummy_id");
