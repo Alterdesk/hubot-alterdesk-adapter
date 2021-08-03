@@ -22,7 +22,7 @@ class AlterdeskAdapter extends Adapter {
             token: process.env.HUBOT_ALTERDESK_TOKEN,
             host: process.env.HUBOT_ALTERDESK_HOST || "api.alterdesk.com:443",
             reconnectTry: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_TRY || 0),
-            reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 10000),
+            reconnectWait: parseInt(process.env.HUBOT_ALTERDESK_RECONNECT_WAIT || 100000),
             ssl: parseInt(process.env.HUBOT_ALTERDESK_SSL || 1),
             pmAddPrefix: parseInt(process.env.HUBOT_ALTERDESK_PM_PREFIX || 0),
             typingDelay: parseInt(process.env.HUBOT_ALTERDESK_TYPING_DELAY || 500),
@@ -97,7 +97,7 @@ class AlterdeskAdapter extends Adapter {
         this.socket.removeEventListener('open', this.onConnected);
         this.socket.removeEventListener('message', this.onData);
 
-        this.reconnectMs += 500 + Math.floor((this.options.reconnectWait / 10) * Math.random());
+        this.reconnectMs += 5000 + Math.floor((this.options.reconnectWait / 10) * Math.random());
         if(this.reconnectMs > this.options.reconnectWait) {
             this.reconnectMs = this.options.reconnectWait;
         }
